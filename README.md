@@ -49,8 +49,8 @@ I am a creative coder based in Xiamen, China.
 
 ## License
 
-StoryScroll is dual licensed under the MIT license and GPL.  
-For more information click [here](https://github.com/xxlh/StoryScroll/blob/master/LICENSE.md).
+StoryScroll is dual licensed under the GPL.  
+For more information click [here](https://github.com/xxlh/StoryScroll/blob/master/LICENSE).
 
 ## Thanks
 
