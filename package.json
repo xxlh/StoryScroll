@@ -1,0 +1,33 @@
+{
+  "name": "storyscroll",
+  "version": "1.0.0",
+  "description": "The javascript library for story scroll interactions with html5 canvas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cleanLib": "./node_modules/.bin/rimraf lib",
+    "bableBuild": "./node_modules/.bin/babel src --out-dir lib",
+    "prepublish": "npm run cleanLib && npm run bableBuild"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xxlh/StoryScroll.git"
+  },
+  "author": "xlh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xxlh/StoryScroll/issues"
+  },
+  "homepage": "https://github.com/xxlh/StoryScroll#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-2": "^6.24.1",
+    "rimraf": "^3.0.0"
+  },
+  "babel": {
+    "presets": [
+      "env", "stage-2"
+    ]
+  }
+}
