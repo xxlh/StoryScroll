@@ -22,6 +22,8 @@ Include the *core* library in your HTML file:
 ## Usage
 
 ```javascript
+import StoryScroll from 'storyscroll'
+
 // init controller
 window.story = new StoryScroll ({
 	crop: 'longside',	// false, none,longside,shortside
