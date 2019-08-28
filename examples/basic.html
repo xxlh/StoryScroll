@@ -1,0 +1,27 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Basic Example - StoryScroll</title>
+	<!-- <script src="../lib/Animate.js"></script>
+	<script src="../lib/Scroller.js"></script> -->
+	<script src="../lib/StoryScroll.js"></script>
+</head>
+<body>
+	<script>
+	// init controller
+	window.story = new StoryScroll ({
+		crop: 'longside',	// false, none,longside,shortside
+		cropOrigin: 'top',	// center, top,bottom, left,right
+		orientation: 'landscape',
+		scrollDirection: 'x',
+		maxScroll: 20000,
+		backgroundColor: 0x000000
+	});
+	
+	// create a sprite
+	let sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).act({x: 0,y:400}, 0.8);
+	</script>
+</body>
+</html>
