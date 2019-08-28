@@ -180,14 +180,6 @@ class StoryScroll {
 		this.containerScroll.name = 'story';
 		this.containerFitWindow.addChild(this.containerScroll);
 		this.app.stage.addChild(this.containerFitWindow);
-
-		//debug
-		// let part2Bg = createSprite("p2door0.png",{
-		// let part2Bg = createSprite("page_01.jpg",{
-		// 	x:0,
-		// 	y:0,
-		// })
-		// this.containerScroll.addChild(part2Bg);
 	}
 	
 	_scrollerCallback(left, top, zoom){
@@ -247,24 +239,57 @@ class StoryScroll {
 			sprite.actions[hash].status = 'acting';
 		}
 		function triggerActionByStep(action) {
-			if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
-				action.sprite._originProps = action.sprite._originProps || {};
-				for (var prop in action.props) {
-					if (typeof action.props[prop] == 'object') {
-						for (var subprop in action.props[prop]) {
-							if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = {};
-							if (!action.sprite._originProps[prop][subprop]) action.sprite._originProps[prop][subprop] = action.sprite[prop][subprop];
+			// if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
+			action.sprite._originProps = action.sprite._originProps || {};
+			for (var prop in action.props) {
+				if (typeof action.props[prop] == 'object') {
+					for (var subprop in action.props[prop]) {
+						if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = {};
+						if (!action.sprite._originProps[prop][subprop]) action.sprite._originProps[prop][subprop] = action.sprite[prop][subprop];
+						if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
 							action.sprite[prop][subprop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.scrollPosition, action.sprite._originProps[prop][subprop], action.props[prop][subprop]);
+						}else if(action.triggerPosition >= this.scrollPosition){
+							action.sprite[prop][subprop] = action.sprite._originProps[prop][subprop];
+						}else if(this.scrollPosition >= action.triggerPosition + action.section){
+							action.sprite[prop][subprop] = action.props[prop][subprop];
 						}
-					} else {
-						if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = action.sprite[prop];
+					}
+				} else {
+					if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = action.sprite[prop];
+					if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
 						action.sprite[prop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.scrollPosition, action.sprite._originProps[prop], action.props[prop]);
+					}else if(action.triggerPosition >= this.scrollPosition){
+						action.sprite[prop] = action.sprite._originProps[prop];
+					}else if(this.scrollPosition >= action.triggerPosition + action.section){
+						action.sprite[prop] = action.props[prop];
 					}
 				}
-			} else if (this.scrollPosition <= action.triggerPosition + action.section) {
+			}
+			// } 
+			// else{
+			 	// if (this.scrollPosition >= action.triggerPosition + action.section) {
 				// 强制达到最终态
 				// if > position => props = ending, else < p => props = start
-			}
+				// for (var prop in action.props) {
+				// 	if (typeof action.props[prop] == 'object') {
+				// 		for (var subprop in action.props[prop]) {
+				// 			if (this.scrollPosition >= action.triggerPosition + action.section) {
+				// 				action.sprite[prop][subprop] =  action.props[prop][subprop];
+				// 			}else if(this.scrollPosition <= action.triggerPosition){
+				// 				action.sprite[prop][subprop] =  action.sprite._originProps[prop][subprop];
+				// 			}
+				// 		}
+				// 	} else {
+				// 		if (!action.sprite._originProps[prop])
+				// 		if (this.scrollPosition >= action.triggerPosition + action.section) {
+				// 			action.sprite[prop][subprop] =  action.props[prop];
+				// 		}else if(this.scrollPosition <= action.triggerPosition){
+				// 			action.sprite[prop][subprop] = action.sprite._originProps[prop];
+				// 		}
+				// 		action.sprite[prop] = action.props[prop];
+				// 	}
+				// }
+			// }
 		}
 	}
 
