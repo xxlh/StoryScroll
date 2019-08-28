@@ -5,6 +5,14 @@ import {TweenMax} from "gsap/TweenMax";
 import Scroller from './Scroller';
 
 class StoryScroll {
+	abstractContentWidth = 0;	// Scaled Design With
+	abstractContentHeight = 0;	// Scaled Design Height
+	abstractViewWidth = 0;		// First View Width = Content Width (No Crop)
+	abstractViewHeight = 0;		// First View Height = abstractDeviceHeight/(abstractDeviceWidth/abstractContentWidth)
+	abstractDeviceWidth = 0;
+	abstractDeviceHeight = 0;
+	abstractMaxScroll = 0;
+
 	constructor(o) {
 		this._defaultSetting(o);
 		this._createContainer(o);
@@ -126,8 +134,8 @@ class StoryScroll {
 		this.cropOrigin = o.cropOrigin || 'top';	// center, top,bottom, left,right
 		this.designOrientation = o.orientation || 'portrait';	// 设计稿横竖屏: portrait, landscape
 		this.scrollDirection = o.scrollDirection || 'y';
-		this.maxScroll = o.maxScroll || 10000;
-		this.desiginWidth = o.desiginWidth || 750;
+		this.designWidth = o.designWidth || 750;
+		this.designHeight = o.designHeight || 10000;
 		this.actionList = [];
 		this.actions = [];
 
@@ -377,6 +385,7 @@ class StoryScroll {
 		this._width = document.documentElement.clientWidth || window.innerWidth;
 		this._height = document.documentElement.clientHeight || window.innerHeight;
 		this.deviceOrientation = this._width < this._height ? 'portrait' : 'landscape';
+		// this.abstractMaxScroll = this.designHeight - this.abstractDeviceHeight
 
 		if(browser.weixin){
 			if(this.designOrientation == 'portrait'){
@@ -417,7 +426,7 @@ class StoryScroll {
 	
 	// 视图横屏 设备横屏
 	_viewLandscapDeviceL(){
-		this._scale = this._height / this.desiginWidth;
+		this._scale = this._height / this.designWidth;
 		this.pageHeight= this._width / this._scale;
 		this.containerFitWindow.rotation = 0;
 		this.containerFitWindow.scale.set(this._scale, this._scale);
@@ -447,7 +456,7 @@ class StoryScroll {
 	}
 	// 视图横屏 设备竖屏 
 	_viewLandscapDeviceP(){
-		this._scale = this._width / this.desiginWidth;
+		this._scale = this._width / this.designWidth;
 		this.pageHeight= this._height / this._scale;
 		this.containerFitWindow.rotation = Math.PI / 2;
 		this.containerFitWindow.scale.set(this._scale, this._scale);
@@ -478,7 +487,7 @@ class StoryScroll {
 	}
 	// 视图竖屏 设备竖屏 
 	_viewPortraitDeviceP(){
-		this._scale = this._height / this.desiginWidth;
+		this._scale = this._height / this.designWidth;
 		this.pageHeight= this._width / this._scale;
 		this.containerFitWindow.rotation = 0;
 		this.containerFitWindow.scale.set(this._scale, this._scale);
@@ -508,7 +517,7 @@ class StoryScroll {
 	}
 	// 视图竖屏 设备横屏 
 	_viewPortraitDeviceL(){
-		this._scale = this._width / this.desiginWidth;
+		this._scale = this._width / this.designWidth;
 		this.pageHeight= this._height / this._scale;
 		this.containerFitWindow.rotation = - Math.PI / 2;
 		this.containerFitWindow.scale.set(this._scale, this._scale);
