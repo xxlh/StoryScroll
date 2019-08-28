@@ -248,20 +248,20 @@ class StoryScroll {
 						if (!action.sprite._originProps[prop][subprop]) action.sprite._originProps[prop][subprop] = action.sprite[prop][subprop];
 						if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
 							action.sprite[prop][subprop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.scrollPosition, action.sprite._originProps[prop][subprop], action.props[prop][subprop]);
-						// }else if(action.triggerPosition >= this.scrollPosition){
-						// 	action.sprite[prop][subprop] = action.sprite._originProps[prop][subprop];
-						// }else if(this.scrollPosition >= action.triggerPosition + action.section){
-						// 	action.sprite[prop][subprop] = action.props[prop][subprop];
+						}else if(action.triggerPosition >= this.scrollPosition){
+							action.sprite[prop][subprop] = action.sprite._originProps[prop][subprop];
+						}else if(this.scrollPosition >= action.triggerPosition + action.section){
+							action.sprite[prop][subprop] = action.props[prop][subprop];
 						}
 					}
 				} else {
 					if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = action.sprite[prop];
 					if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
 						action.sprite[prop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.scrollPosition, action.sprite._originProps[prop], action.props[prop]);
-					// }else if(action.triggerPosition >= this.scrollPosition){
-					// 	action.sprite[prop] = action.sprite._originProps[prop];
-					// }else if(this.scrollPosition >= action.triggerPosition + action.section){
-					// 	action.sprite[prop] = action.props[prop];
+					}else if(action.triggerPosition >= this.scrollPosition){
+						action.sprite[prop] = action.sprite._originProps[prop];
+					}else if(this.scrollPosition >= action.triggerPosition + action.section){
+						action.sprite[prop] = action.props[prop];
 					}
 				}
 			}
