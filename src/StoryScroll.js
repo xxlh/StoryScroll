@@ -126,7 +126,7 @@ class StoryScroll {
 		this.cropOrigin = o.cropOrigin || 'top';	// center, top,bottom, left,right
 		this.designOrientation = o.orientation || 'portrait';	// 设计稿横竖屏: portrait, landscape
 		this.scrollDirection = o.scrollDirection || 'y';
-		this.maxScroll = o.maxScroll || 10000;
+		this.maxScroll = o.maxScroll-this.pageHeight || 10000;
 		this.desiginWidth = o.desiginWidth || 750;
 		this.actionList = [];
 		this.actions = [];
