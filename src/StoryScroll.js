@@ -7,8 +7,8 @@ import Scroller from './Scroller';
 class StoryScroll {
 	designWidth;
 	designLength;
-	abstractContentWidth = 0;	// Scaled Design With
-	abstractContentLength = 0;	// Scaled Design Length
+	abstractContentWidth;	// Scaled Design With
+	abstractContentLength;	// Scaled Design Length
 	abstractViewWidth;		// First View Width = Content Width (No Crop)
 	abstractViewLength;		// First View Length = abstractDeviceLength/(abstractDeviceWidth/designWidth)
 	abstractDeviceWidth;
@@ -136,6 +136,7 @@ class StoryScroll {
 		this.scrollDirection = o.direction || 'y';
 		this.designWidth = o.width || 750;
 		this.designLength = o.length || 10000;
+		this.debug = o.debug || false;
 		this.actionList = [];
 		this.actions = [];
 
@@ -196,11 +197,6 @@ class StoryScroll {
 		this.storyPosition = this.scrollPosition / this._scale;
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
 
-		console.log('top:', top)
-		console.log('left:', left)
-		console.log('scrollPosition :', this.scrollPosition );
-		console.log('storyPosition :', this.storyPosition );
-
 		// Act
 		this.actions.forEach(action => {
 			if (action.type == 'point') {
@@ -211,6 +207,13 @@ class StoryScroll {
 				triggerActionSetPin.call(this, action);
 			}
 		});
+
+		if (this.debug) {
+			// console.log('top:', top)
+			// console.log('left:', left)
+			// console.log('scrollPosition :', this.scrollPosition );
+			console.log('storyPosition :', this.storyPosition );
+		}
 
 
 		function triggerActionByPosition(action) {
