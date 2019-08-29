@@ -5,6 +5,17 @@ import {TweenMax} from "gsap/TweenMax";
 import Scroller from './Scroller';
 
 class StoryScroll {
+	designWidth;
+	designLength;
+	contentWidth;	// Scaled Design With
+	contentLength;	// Scaled Design Length
+	viewWidth;		// First View Width = Content Width (No Crop)
+	viewLength;		// First View Length = deviceHeight/(deviceWidth/designWidth)
+	deviceWidth;	// Phsical device width
+	deviceHeight;	// Phsical device height
+	maxScroll = 10000;
+	storyPosition = 0;
+
 	constructor(o) {
 		this._defaultSetting(o);
 		this._createContainer(o);
@@ -122,19 +133,17 @@ class StoryScroll {
 	}
 	
 	_defaultSetting(o) {
-		this.crop = o.crop || 'longside';	// false, none,longside,shortside
-		this.cropOrigin = o.cropOrigin || 'top';	// center, top,bottom, left,right
-		this.designOrientation = o.orientation || 'portrait';	// 设计稿横竖屏: portrait, landscape
-		this.scrollDirection = o.scrollDirection || 'y';
-		this.maxScroll = o.maxScroll || 10000;
-		this.desiginWidth = o.desiginWidth || 750;
-		this.actionList = [];
-		this.actions = [];
+		this.scrollDirection = o.direction || 'y';
+		this.designWidth = o.width || 750;
+		this.designLength = o.length || 10000;
+		this.debug = o.debug || false;
 
 		// init
-		this._width = document.documentElement.clientWidth || window.innerWidth;
-		this._height = document.documentElement.clientHeight || window.innerHeight;
-		this.deviceOrientation = this._width < this._height ? 'portrait' : 'landscape';	// 当前设备横竖屏
+		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
+		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
+		this.designOrientation = this.scrollDirection == 'y' ? 'portrait' : 'landscape'
+		this.actionList = [];
+		this.actions = [];
 		this.loaderList = [];
 		
 		this.scroller = new Scroller((left, top, zoom) => this._scrollerCallback(left, top, zoom), {
@@ -144,7 +153,7 @@ class StoryScroll {
 			animationDuration: 1000
 		});
 		this.scroller.__enableScrollY = true;
-		this.scrollPosition = 0;
+		this.storyPosition = 0;
 
 		let mousedown = false;
 		document.addEventListener("touchstart", (e) => {
@@ -170,7 +179,7 @@ class StoryScroll {
 	};
 
 	_createContainer(o) {
-		this.app = new PIXI.Application( {width: this._width, height: this._height, backgroundColor : o.backgroundColor, antialias: true});
+		this.app = new PIXI.Application( {width: this._clientWidth, height: this._clientHeight, backgroundColor : o.backgroundColor, antialias: true});
 		const main = document.body.appendChild(document.createElement('main'));
 		main.appendChild(this.app.view);
 
@@ -183,26 +192,9 @@ class StoryScroll {
 	}
 	
 	_scrollerCallback(left, top, zoom){
-		// console.log('top:', top)
-		// console.log('left:', left)
-		// scrollTo.set({left, top})
-		// this.scrollPosition = scrollTo.getSrollPosition();
-		// scrollToDestination(left, top)
-		
-		// this.scrollPosition = this.deviceOrientation=='portrait' ? top : left;
-		// this.scrollPosition /= this._scale; 
-
 		this.scrollPosition = this._getSrollPosition(left, top);
-
-
-		if (this.scrollDirection == 'x') {
-			this.containerScroll.x = -this.scrollPosition / this._scale;
-			this.scrollPosition = this.scrollPosition / this._scale;
-		} else {
-			this.containerScroll.y = -this.scrollPosition / this._scale;
-			this.scrollPosition = this.scrollPosition / this._scale;
-		}
-		console.log('scrollPosition :', this.scrollPosition );
+		this.storyPosition = this.scrollPosition / this._scale;
+		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
 
 		// Act
 		this.actions.forEach(action => {
@@ -215,9 +207,17 @@ class StoryScroll {
 			}
 		});
 
+		if (this.debug) {
+			// console.log('top:', top)
+			// console.log('left:', left)
+			// console.log('scrollPosition :', this.scrollPosition );
+			console.log('storyPosition :', this.storyPosition );
+		}
+
+
 		function triggerActionByPosition(action) {
 			let storedAction = action.sprite.actions[action.hash];
-			if (this.scrollPosition > action.triggerPosition) {
+			if (this.storyPosition > action.triggerPosition) {
 				if (storedAction.status != 'acting' && storedAction.status != 'done') {
 					action.props.onComplete = el => storedAction.status = 'done';
 					action.props.onReverseComplete = el => storedAction.status = 'reversed';
@@ -239,51 +239,51 @@ class StoryScroll {
 			sprite.actions[hash].status = 'acting';
 		}
 		function triggerActionByStep(action) {
-			// if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
+			// if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
 			action.sprite._originProps = action.sprite._originProps || {};
 			for (var prop in action.props) {
 				if (typeof action.props[prop] == 'object') {
 					for (var subprop in action.props[prop]) {
 						if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = {};
 						if (!action.sprite._originProps[prop][subprop]) action.sprite._originProps[prop][subprop] = action.sprite[prop][subprop];
-						if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
-							action.sprite[prop][subprop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.scrollPosition, action.sprite._originProps[prop][subprop], action.props[prop][subprop]);
-						}else if(action.triggerPosition >= this.scrollPosition){
+						if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
+							action.sprite[prop][subprop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.sprite._originProps[prop][subprop], action.props[prop][subprop]);
+						}else if(action.triggerPosition >= this.storyPosition){
 							action.sprite[prop][subprop] = action.sprite._originProps[prop][subprop];
-						}else if(this.scrollPosition >= action.triggerPosition + action.section){
+						}else if(this.storyPosition >= action.triggerPosition + action.section){
 							action.sprite[prop][subprop] = action.props[prop][subprop];
 						}
 					}
 				} else {
 					if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = action.sprite[prop];
-					if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
-						action.sprite[prop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.scrollPosition, action.sprite._originProps[prop], action.props[prop]);
-					}else if(action.triggerPosition >= this.scrollPosition){
+					if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
+						action.sprite[prop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.sprite._originProps[prop], action.props[prop]);
+					}else if(action.triggerPosition >= this.storyPosition){
 						action.sprite[prop] = action.sprite._originProps[prop];
-					}else if(this.scrollPosition >= action.triggerPosition + action.section){
+					}else if(this.storyPosition >= action.triggerPosition + action.section){
 						action.sprite[prop] = action.props[prop];
 					}
 				}
 			}
 			// } 
 			// else{
-			 	// if (this.scrollPosition >= action.triggerPosition + action.section) {
+			 	// if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 强制达到最终态
 				// if > position => props = ending, else < p => props = start
 				// for (var prop in action.props) {
 				// 	if (typeof action.props[prop] == 'object') {
 				// 		for (var subprop in action.props[prop]) {
-				// 			if (this.scrollPosition >= action.triggerPosition + action.section) {
+				// 			if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 				action.sprite[prop][subprop] =  action.props[prop][subprop];
-				// 			}else if(this.scrollPosition <= action.triggerPosition){
+				// 			}else if(this.storyPosition <= action.triggerPosition){
 				// 				action.sprite[prop][subprop] =  action.sprite._originProps[prop][subprop];
 				// 			}
 				// 		}
 				// 	} else {
 				// 		if (!action.sprite._originProps[prop])
-				// 		if (this.scrollPosition >= action.triggerPosition + action.section) {
+				// 		if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 			action.sprite[prop][subprop] =  action.props[prop];
-				// 		}else if(this.scrollPosition <= action.triggerPosition){
+				// 		}else if(this.storyPosition <= action.triggerPosition){
 				// 			action.sprite[prop][subprop] = action.sprite._originProps[prop];
 				// 		}
 				// 		action.sprite[prop] = action.props[prop];
@@ -374,168 +374,83 @@ class StoryScroll {
 	}
 	
 	_windowResize() {
-		this._width = document.documentElement.clientWidth || window.innerWidth;
-		this._height = document.documentElement.clientHeight || window.innerHeight;
-		this.deviceOrientation = this._width < this._height ? 'portrait' : 'landscape';
+		this.deviceOrientation = getDeviceOrientation.call(this);
+		this.deviceWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth		: this._clientHeight;
+		this.deviceHeight = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
 
-		if(browser.weixin){
-			if(this.designOrientation == 'portrait'){
-				if(window.orientation === 90 || window.orientation === -90){
-					// 横屏 浏览器的宽度大于高度
-					this._viewPortraitDeviceL();
-				} else if (window.orientation === 180 || window.orientation === 0){
-					// 竖屏 浏览器的宽度小于高度
-					this._viewPortraitDeviceP();
-				}
-			}else{
-				if(window.orientation === 90 || window.orientation === -90){
-					// 横屏 浏览器的宽度大于高度
-					this._viewLandscapDeviceL();
-				} else if (window.orientation === 180 || window.orientation === 0){
-					// 竖屏 浏览器的宽度小于高度
-					this._viewLandscapDeviceP();
-				}
-			}
-			
-		}else{
-			// console.log("width"+this._width +"height"+this._height)
-			if(this.designOrientation == 'portrait'){
-				if (this.deviceOrientation == 'portrait') {
-					this._viewPortraitDeviceP();
-				} else {
-					this._viewPortraitDeviceL();
-				}
-			}else{
-				if (this.deviceOrientation == 'portrait') {
-					this._viewLandscapDeviceP();
-				} else {
-					this._viewLandscapDeviceL();
-				}
-			}
-		}
-	}
-	
-	// 视图横屏 设备横屏
-	_viewLandscapDeviceL(){
-		this._scale = this._height / this.desiginWidth;
-		this.pageHeight= this._width / this._scale;
-		this.containerFitWindow.rotation = 0;
+		this._scale = this.deviceWidth / this.designWidth;
+		this.maxScroll = this.designWidth - this.deviceHeight
+
+		this.contentWidth = this.deviceWidth;
+		this.contentLength = this.designLength * this._scale;
+
+		this.viewWidth = this.designWidth;
+		this.viewLength = this.deviceHeight / this._scale;
+
+		setContainerRotation(this.containerFitWindow, this.designOrientation, this.deviceOrientation, this.deviceWidth);
 		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._width, this._height);
-		switch (this.cropOrigin) {
-			case 'center':
-				this.containerFitWindow.position.set(0, (this._width - this.maxScroll)/2);
-				break;
-			case 'right':
-				this.containerFitWindow.position.set(0, this._width - this.maxScroll);
-				break;
-			case 'left':
-			default:
-				this.containerFitWindow.position.set(0, 0);
-				break;
-		}
+		this.app.renderer.resize(this._clientWidth, this._clientHeight);
+
+		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth			: this.contentLength;
+		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.contentLength	: this._clientWidth;
+		let scrollerLeft = this.deviceOrientation == 'portrait' ?	0					: this.scrollPosition||0;
+		let scrollerTop = this.deviceOrientation == 'portrait' ?	this.scrollPosition||0	: 0;
 
 		setTimeout(() => {
-			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._width, this._height, this.maxScroll + this._width, this._height);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
-			}else{
-				this.scroller.setDimensions(this._width, this._height, this._width, this.maxScroll + this._height);
-				this.scroller.scrollTo(0, this.scrollPosition * this._scale, false);
-			}
-		},200)
-	}
-	// 视图横屏 设备竖屏 
-	_viewLandscapDeviceP(){
-		this._scale = this._width / this.desiginWidth;
-		this.pageHeight= this._height / this._scale;
-		this.containerFitWindow.rotation = Math.PI / 2;
-		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._width, this._height);
-		switch (this.cropOrigin) {
-			case 'center':
-				this.containerFitWindow.position.set(this._width, (this._height - this.maxScroll)/2);
-				break;
-			case 'bottom':
-				this.containerFitWindow.position.set(this._width, this._height - this.maxScroll);
-				break;
-			case 'top':
-			default:
-				this.containerFitWindow.position.set(this._width, 0);
-				break;
-		}
-
-		setTimeout(() => {
-			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._width, this._height,  this._width, this.maxScroll + this._height);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
-			}else{
-				this.scroller.setDimensions(this._width, this._height,  this.maxScroll + this._width, this._height);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
-			}
+			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
+			this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 		},200)
 		
-	}
-	// 视图竖屏 设备竖屏 
-	_viewPortraitDeviceP(){
-		this._scale = this._height / this.desiginWidth;
-		this.pageHeight= this._width / this._scale;
-		this.containerFitWindow.rotation = 0;
-		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._width, this._height);
-		switch (this.cropOrigin) {
-			case 'center':
-				this.containerFitWindow.position.set(0, (this._width - this.maxScroll)/2);
-				break;
-			case 'bottom':
-				this.containerFitWindow.position.set(0, this._width - this.maxScroll);
-				break;
-			case 'top':
-			default:
-				this.containerFitWindow.position.set(0, 0);
-				break;
+
+		function getDeviceOrientation(params) {
+			this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
+			this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
+
+			if (browser.weixin) {
+				// ToTest: 测试好像现在微信不需要特别判断了？
+				if (window.orientation === 180 || window.orientation === 0) {
+					return 'portrait';
+				} else if (window.orientation === 90 || window.orientation === -90) {
+					return 'landscape';
+				}
+			} else {
+				return this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';
+			}
 		}
 
-		setTimeout(() => {
-			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._width, this._height, this.maxScroll + this._width, this._height);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
-			}else{
-				this.scroller.setDimensions(this._width, this._height, this._width, this.maxScroll + this._height);
-				this.scroller.scrollTo(0, this.scrollPosition * this._scale, false);
+		function setContainerRotation(container, designOrientation, deviceOrientation, deviceWidth) {
+			const rotationMap = {
+				design_portrait: {
+					device_portrait: {
+						rotation: 0,
+						offsetX: 0,
+						offsetY: 0
+					},
+					device_landscape: {
+						rotation: - Math.PI / 2,
+						offsetX: 0,
+						offsetY: deviceWidth
+					}
+				},
+				design_landscape: {
+					device_portrait: {
+						rotation: Math.PI / 2,
+						offsetX: deviceWidth,
+						offsetY: 0
+					},
+					device_landscape: {
+						rotation: 0,
+						offsetX: 0,
+						offsetY: 0
+					}
+				}
 			}
-		},200)
-	}
-	// 视图竖屏 设备横屏 
-	_viewPortraitDeviceL(){
-		this._scale = this._width / this.desiginWidth;
-		this.pageHeight= this._height / this._scale;
-		this.containerFitWindow.rotation = - Math.PI / 2;
-		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._width, this._height);
-		switch (this.cropOrigin) {
-			case 'center':
-				this.containerFitWindow.position.set((this._width - this.maxScroll)/2, this._height);
-				break;
-			case 'bottom':
-				this.containerFitWindow.position.set(this._width - this.maxScroll, this._height);
-				break;
-			case 'top':
-			default:
-				this.containerFitWindow.position.set(0, this._height);
-				break;
+			container.rotation = rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['rotation'];
+			container.position.set(
+				rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetX'],
+				rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetY']
+			);
 		}
-
-		setTimeout(() => {
-			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._width, this._height,  this._width, this.maxScroll + this._height);
-				this.scroller.scrollTo(0, this.scrollPosition * this._scale, false);
-			}else{
-				this.scroller.setDimensions(this._width, this._height,  this.maxScroll + this._width, this._height);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
-			}
-		},200)
-		
 	}
 }
 
