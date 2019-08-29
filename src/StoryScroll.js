@@ -126,9 +126,13 @@ class StoryScroll {
 		return obj;
 	}
 	setPin(obj, triggerPosition, section) {
-		if (section === undefined) section = this.maxScroll;
-		let props = this.scrollDirection == 'x' ? {x: obj.x + section } : {y: obj.y + section };
-		obj.actByStep(props, section, triggerPosition)
+		// if (section === undefined) section = this.maxScroll;
+		// let props = this.scrollDirection == 'x' ? {x: obj.x + section } : {y: obj.y + section };
+		// obj.actByStep(props, section, triggerPosition)
+		if (!obj.actions) obj.actions = {};
+		let hash = this._createHash();
+		obj.actions[hash] = {action:{type:'pin', section, triggerPosition}};
+		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
 	}
 	
@@ -241,57 +245,28 @@ class StoryScroll {
 			sprite.actions[hash].status = 'acting';
 		}
 		function triggerActionByStep(action) {
-			// if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
-			action.sprite._originProps = action.sprite._originProps || {};
-			for (var prop in action.props) {
-				if (typeof action.props[prop] == 'object') {
-					for (var subprop in action.props[prop]) {
-						if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = {};
-						if (!action.sprite._originProps[prop][subprop]) action.sprite._originProps[prop][subprop] = action.sprite[prop][subprop];
-						if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
-							action.sprite[prop][subprop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.sprite._originProps[prop][subprop], action.props[prop][subprop]);
-						}else if(action.triggerPosition >= this.storyPosition){
-							action.sprite[prop][subprop] = action.sprite._originProps[prop][subprop];
-						}else if(this.storyPosition >= action.triggerPosition + action.section){
-							action.sprite[prop][subprop] = action.props[prop][subprop];
+			let storedAction = action.sprite.actions[action.hash];
+			if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
+				storedAction.originProps = storedAction.originProps || {};
+				for (var prop in action.props) {
+					if (typeof action.props[prop] == 'object') {
+						for (var subprop in action.props[prop]) {
+							if (!storedAction.originProps[prop]) storedAction.originProps[prop] = {};
+							if (!storedAction.originProps[prop][subprop]) storedAction.originProps[prop][subprop] = action.sprite[prop][subprop];
+							action.sprite[prop][subprop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, storedAction.originProps[prop][subprop], action.props[prop][subprop]);
 						}
-					}
-				} else {
-					if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = action.sprite[prop];
-					if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
-						action.sprite[prop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.sprite._originProps[prop], action.props[prop]);
-					}else if(action.triggerPosition >= this.storyPosition){
-						action.sprite[prop] = action.sprite._originProps[prop];
-					}else if(this.storyPosition >= action.triggerPosition + action.section){
-						action.sprite[prop] = action.props[prop];
+					} else {
+						if (!storedAction.originProps[prop]) storedAction.originProps[prop] = action.sprite[prop];
+						action.sprite[prop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, storedAction.originProps[prop], action.props[prop]);
 					}
 				}
-			}
-			// } 
-			// else{
-			 	// if (this.storyPosition >= action.triggerPosition + action.section) {
+			} else if (this.storyPosition <= action.triggerPosition + action.section) {
 				// 强制达到最终态
 				// if > position => props = ending, else < p => props = start
-				// for (var prop in action.props) {
-				// 	if (typeof action.props[prop] == 'object') {
-				// 		for (var subprop in action.props[prop]) {
-				// 			if (this.storyPosition >= action.triggerPosition + action.section) {
-				// 				action.sprite[prop][subprop] =  action.props[prop][subprop];
-				// 			}else if(this.storyPosition <= action.triggerPosition){
-				// 				action.sprite[prop][subprop] =  action.sprite._originProps[prop][subprop];
-				// 			}
-				// 		}
-				// 	} else {
-				// 		if (!action.sprite._originProps[prop])
-				// 		if (this.storyPosition >= action.triggerPosition + action.section) {
-				// 			action.sprite[prop][subprop] =  action.props[prop];
-				// 		}else if(this.storyPosition <= action.triggerPosition){
-				// 			action.sprite[prop][subprop] = action.sprite._originProps[prop];
-				// 		}
-				// 		action.sprite[prop] = action.props[prop];
-				// 	}
-				// }
-			// }
+			}
+		}
+		function triggerActionSetPin(action) {
+			// action.sprite[this.scrollDirection] = action.sprite.origin[this.scrollDirection] - action.triggerPosition + this.storyPosition;
 		}
 	}
 
@@ -381,7 +356,7 @@ class StoryScroll {
 		this.deviceHeight = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
 
 		this._scale = this.deviceWidth / this.designWidth;
-		this.maxScroll = this.designWidth - this.deviceHeight
+		this.maxScroll = this.designLength - this.deviceHeight
 
 		this.contentWidth = this.deviceWidth;
 		this.contentLength = this.designLength * this._scale;
