@@ -397,13 +397,12 @@ this.maxScroll = this.designLength - this._clientWidth
 		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.abstractContentLength	: this._clientWidth;
 		let scrollerLeft = this.deviceOrientation == 'portrait' ?	0					: this.scrollPosition||0;
 		let scrollerTop = this.deviceOrientation == 'portrait' ?	this.scrollPosition||0	: 0;
-		console.log(scrollerLeft, scrollerTop);
-		
 
 		setTimeout(() => {
 			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
 			this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 		},200)
+		
 
 		function getDeviceOrientation(params) {
 			this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
@@ -454,165 +453,6 @@ this.maxScroll = this.designLength - this._clientWidth
 				rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetY']
 			);
 		}
-
-		if(browser.weixin){
-			if(this.designOrientation == 'portrait'){
-				if(window.orientation === 90 || window.orientation === -90){
-					// 横屏 浏览器的宽度大于高度
-					this._viewPortraitDeviceL();
-				} else if (window.orientation === 180 || window.orientation === 0){
-					// 竖屏 浏览器的宽度小于高度
-					this._viewPortraitDeviceP();
-				}
-			}else{
-				if(window.orientation === 90 || window.orientation === -90){
-					// 横屏 浏览器的宽度大于高度
-					this._viewLandscapDeviceL();
-				} else if (window.orientation === 180 || window.orientation === 0){
-					// 竖屏 浏览器的宽度小于高度
-					this._viewLandscapDeviceP();
-				}
-			}
-			
-		}else{
-			// console.log("width"+this._clientWidth +"height"+this._clientHeight)
-			if(this.designOrientation == 'portrait'){
-				if (this.deviceOrientation == 'portrait') {
-					this._viewPortraitDeviceP();
-				} else {
-					this._viewPortraitDeviceL();
-				}
-			}else{
-				if (this.deviceOrientation == 'portrait') {
-					this._viewLandscapDeviceP();
-				} else {
-					this._viewLandscapDeviceL();
-				}
-			}
-		}
-	}
-	
-	// 视图横屏 设备横屏
-	_viewLandscapDeviceL(){
-		// this._scale = this._clientHeight / this.designWidth;
-		// this.pageHeight= this._clientWidth / this._scale;
-		// this.containerFitWindow.rotation = 0;
-		// this.containerFitWindow.scale.set(this._scale, this._scale);
-		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
-		switch (this.cropOrigin) {
-			case 'center':
-				this.containerFitWindow.position.set(0, (this._clientWidth - this.maxScroll)/2);
-				break;
-			case 'right':
-				this.containerFitWindow.position.set(0, this._clientWidth - this.maxScroll);
-				break;
-			// case 'left':
-			// default:
-			// 	this.containerFitWindow.position.set(0, 0);
-			// 	break;
-		}
-
-		// setTimeout(() => {
-		// 	if(this.scrollDirection == 'x'){
-		// 		this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
-		// 		this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-		// 	}else{
-		// 		// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
-		// 		// this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
-		// 	}
-		// },200)
-	}
-	// 视图横屏 设备竖屏 
-	_viewLandscapDeviceP(){
-		// this._scale = this._clientWidth / this.designWidth;
-		// this.pageHeight= this._clientHeight / this._scale;
-		// this.containerFitWindow.rotation = Math.PI / 2;
-		// this.containerFitWindow.scale.set(this._scale, this._scale);
-		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
-		switch (this.cropOrigin) {
-			case 'center':
-				this.containerFitWindow.position.set(this._clientWidth, (this._clientHeight - this.maxScroll)/2);
-				break;
-			case 'bottom':
-				this.containerFitWindow.position.set(this._clientWidth, this._clientHeight - this.maxScroll);
-				break;
-			// case 'top':
-			// default:
-			// 	this.containerFitWindow.position.set(this._clientWidth, 0);
-			// 	break;
-		}
-
-		// setTimeout(() => {
-		// 	if(this.scrollDirection == 'x'){
-		// 		this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
-		// 		this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-		// 	}else{
-		// 		// this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
-		// 		// this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-		// 	}
-		// },200)
-		
-	}
-	// 视图竖屏 设备竖屏 
-	_viewPortraitDeviceP(){
-		// this._scale = this._clientHeight / this.designWidth;
-		// this.pageHeight= this._clientWidth / this._scale;
-		// this.containerFitWindow.rotation = 0;
-		// this.containerFitWindow.scale.set(this._scale, this._scale);
-		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
-		switch (this.cropOrigin) {
-			case 'center':
-				this.containerFitWindow.position.set(0, (this._clientWidth - this.maxScroll)/2);
-				break;
-			case 'bottom':
-				this.containerFitWindow.position.set(0, this._clientWidth - this.maxScroll);
-				break;
-			// case 'top':
-			// default:
-			// 	this.containerFitWindow.position.set(0, 0);
-			// 	break;
-		}
-
-		// setTimeout(() => {
-		// 	if(this.scrollDirection == 'x'){
-		// 		// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
-		// 		// this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-		// 	}else{
-		// 		this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
-		// 		this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
-		// 	}
-		// },200)
-	}
-	// 视图竖屏 设备横屏 
-	_viewPortraitDeviceL(){
-		// this._scale = this._clientWidth / this.designWidth;
-		// this.pageHeight= this._clientHeight / this._scale;
-		// this.containerFitWindow.rotation = - Math.PI / 2;
-		// this.containerFitWindow.scale.set(this._scale, this._scale);
-		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
-		switch (this.cropOrigin) {
-			case 'center':
-				this.containerFitWindow.position.set((this._clientWidth - this.maxScroll)/2, this._clientHeight);
-				break;
-			case 'bottom':
-				this.containerFitWindow.position.set(this._clientWidth - this.maxScroll, this._clientHeight);
-				break;
-			// case 'top':
-			// default:
-			// 	this.containerFitWindow.position.set(0, this._clientHeight);
-			// 	break;
-		}
-
-		// setTimeout(() => {
-		// 	if(this.scrollDirection == 'x'){
-		// 		// this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
-		// 		// this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
-		// 	}else{
-		// 		this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
-		// 		this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-		// 	}
-		// },200)
-		
 	}
 }
 
