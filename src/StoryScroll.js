@@ -5,6 +5,8 @@ import {TweenMax} from "gsap/TweenMax";
 import Scroller from './Scroller';
 
 class StoryScroll {
+	designWidth;
+	designHeight;
 	// abstractContentWidth = 0;	// Scaled Design With
 	// abstractContentLength = 0;	// Scaled Design Length
 	abstractViewWidth = 0;		// First View Width = Content Width (No Crop)
@@ -394,6 +396,10 @@ console.log('scrollPosition :', this.scrollPosition );
 		this.deviceOrientation = this._width < this._height ? 'portrait' : 'landscape';
 		// this.abstractMaxScroll = this.designLength - this.abstractDeviceHeight
 
+		this._scale = this.abstractDeviceWidth / this.designWidth;
+		this.abstractViewLength = this.abstractDeviceLength / this._scale;
+		// this.containerFitWindow.rotation = 0;
+
 		if(browser.weixin){
 			if(this.designOrientation == 'portrait'){
 				if(window.orientation === 90 || window.orientation === -90){
@@ -494,8 +500,8 @@ console.log('scrollPosition :', this.scrollPosition );
 	}
 	// 视图竖屏 设备竖屏 
 	_viewPortraitDeviceP(){
-		this._scale = this._height / this.designWidth;
-		this.pageHeight= this._width / this._scale;
+		// this._scale = this._height / this.designWidth;
+		// this.pageHeight= this._width / this._scale;
 		this.containerFitWindow.rotation = 0;
 		this.containerFitWindow.scale.set(this._scale, this._scale);
 		this.app.renderer.resize(this._width, this._height);
