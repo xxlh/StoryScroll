@@ -208,9 +208,11 @@ class StoryScroll {
 		});
 
 		if (this.debug) {
-			// console.log('top:', top)
-			// console.log('left:', left)
-			// console.log('scrollPosition :', this.scrollPosition );
+			if (this.debug == 'all') {
+				console.log('top:', top)
+				console.log('left:', left)
+				console.log('scrollPosition :', this.scrollPosition );
+			}
 			console.log('storyPosition :', this.storyPosition );
 		}
 
@@ -391,8 +393,8 @@ class StoryScroll {
 		this.containerFitWindow.scale.set(this._scale, this._scale);
 		this.app.renderer.resize(this._clientWidth, this._clientHeight);
 
-		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth			: this.contentLength;
-		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.contentLength	: this._clientWidth;
+		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this.deviceWidth	: this.contentLength;
+		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.contentLength	: this.deviceWidth;
 		let scrollerLeft = this.deviceOrientation == 'portrait' ?	0					: this.scrollPosition||0;
 		let scrollerTop = this.deviceOrientation == 'portrait' ?	this.scrollPosition||0	: 0;
 
