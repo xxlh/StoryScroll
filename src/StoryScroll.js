@@ -291,7 +291,11 @@ class StoryScroll {
 			}
 		}
 		function triggerActionSetPin(action) {
-			// action.sprite[this.scrollDirection] = action.sprite.origin[this.scrollDirection] - action.triggerPosition + this.storyPosition;
+			let storedAction = action.sprite.actions[action.hash];
+			storedAction.originProps = storedAction.originProps || {};
+			if (!storedAction.originProps[this.scrollDirection]) storedAction.originProps[this.scrollDirection] = action.sprite[this.scrollDirection];
+
+			action.sprite[this.scrollDirection] = storedAction.originProps[this.scrollDirection] - action.triggerPosition + this.storyPosition;
 		}
 	}
 
