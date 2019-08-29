@@ -133,9 +133,6 @@ class StoryScroll {
 	}
 	
 	_defaultSetting(o) {
-		this.crop = o.crop || 'longside';	// false, none,longside,shortside
-		this.cropOrigin = o.cropOrigin || 'top';	// center, top,bottom, left,right
-		// this.designOrientation = o.orientation || 'portrait';	// 设计稿横竖屏: portrait, landscape
 		this.scrollDirection = o.direction || 'y';
 		this.designWidth = o.width || 750;
 		this.designLength = o.length || 10000;
