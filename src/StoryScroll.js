@@ -6,7 +6,7 @@ import Scroller from './Scroller';
 
 class StoryScroll {
 	designWidth;
-	designHeight;
+	designLength;
 	// abstractContentWidth = 0;	// Scaled Design With
 	// abstractContentLength = 0;	// Scaled Design Length
 	abstractViewWidth = 0;		// First View Width = Content Width (No Crop)
@@ -143,12 +143,12 @@ class StoryScroll {
 		this.actions = [];
 
 		// init
-		this._width = document.documentElement.clientWidth || window.innerWidth;
-		this._height = document.documentElement.clientHeight || window.innerHeight;
-		this.deviceOrientation = this._width < this._height ? 'portrait' : 'landscape';	// 当前设备横竖屏
+		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
+		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
+		this.deviceOrientation = this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';	// 当前设备横竖屏
 		this.designOrientation = this.scrollDirection == 'y' ? 'portrait' : 'landscape'
 		this.loaderList = [];
-this.maxScroll = this.designLength - this._width
+this.maxScroll = this.designLength - this._clientWidth
 		
 		this.scroller = new Scroller((left, top, zoom) => this._scrollerCallback(left, top, zoom), {
 			zooming: false,
@@ -183,7 +183,7 @@ this.maxScroll = this.designLength - this._width
 	};
 
 	_createContainer(o) {
-		this.app = new PIXI.Application( {width: this._width, height: this._height, backgroundColor : o.backgroundColor, antialias: true});
+		this.app = new PIXI.Application( {width: this._clientWidth, height: this._clientHeight, backgroundColor : o.backgroundColor, antialias: true});
 		const main = document.body.appendChild(document.createElement('main'));
 		main.appendChild(this.app.view);
 
@@ -392,14 +392,28 @@ console.log('scrollPosition :', this.scrollPosition );
 	}
 	
 	_windowResize() {
-		this._width = document.documentElement.clientWidth || window.innerWidth;
-		this._height = document.documentElement.clientHeight || window.innerHeight;
-		this.deviceOrientation = this._width < this._height ? 'portrait' : 'landscape';
-		// this.abstractMaxScroll = this.designLength - this.abstractDeviceHeight
+		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
+		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
+		
+		this.deviceOrientation = this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';
+		this.abstractDeviceWidth = this.deviceOrientation == 'portrait' ? this._clientWidth : this._clientHeight;
+		this.abstractDeviceWidth = this.deviceOrientation == 'portrait' ? this._clientWidth : this._clientHeight;
 
 		this._scale = this.abstractDeviceWidth / this.designWidth;
+		this.abstractMaxScroll = this.designWidth - this.abstractDeviceLength
+
+		this.abstractViewWidth = this.designWidth;
 		this.abstractViewLength = this.abstractDeviceLength / this._scale;
-		// this.containerFitWindow.rotation = 0;
+
+		// this.containerFitWindow.rotation = getContainerRotation();
+		this.containerFitWindow.scale.set(this._scale, this._scale);
+		this.app.renderer.resize(this._clientWidth, this._clientHeight);
+
+		// function getContainerRotation(params) {
+		// 	const rotationMap = {
+
+		// 	}
+		// }
 
 		if(browser.weixin){
 			if(this.designOrientation == 'portrait'){
@@ -421,7 +435,7 @@ console.log('scrollPosition :', this.scrollPosition );
 			}
 			
 		}else{
-			// console.log("width"+this._width +"height"+this._height)
+			// console.log("width"+this._clientWidth +"height"+this._clientHeight)
 			if(this.designOrientation == 'portrait'){
 				if (this.deviceOrientation == 'portrait') {
 					this._viewPortraitDeviceP();
@@ -440,17 +454,17 @@ console.log('scrollPosition :', this.scrollPosition );
 	
 	// 视图横屏 设备横屏
 	_viewLandscapDeviceL(){
-		this._scale = this._height / this.designWidth;
-		this.pageHeight= this._width / this._scale;
+		this._scale = this._clientHeight / this.designWidth;
+		this.pageHeight= this._clientWidth / this._scale;
 		this.containerFitWindow.rotation = 0;
 		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._width, this._height);
+		this.app.renderer.resize(this._clientWidth, this._clientHeight);
 		switch (this.cropOrigin) {
 			case 'center':
-				this.containerFitWindow.position.set(0, (this._width - this.maxScroll)/2);
+				this.containerFitWindow.position.set(0, (this._clientWidth - this.maxScroll)/2);
 				break;
 			case 'right':
-				this.containerFitWindow.position.set(0, this._width - this.maxScroll);
+				this.containerFitWindow.position.set(0, this._clientWidth - this.maxScroll);
 				break;
 			case 'left':
 			default:
@@ -460,40 +474,40 @@ console.log('scrollPosition :', this.scrollPosition );
 
 		setTimeout(() => {
 			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._width, this._height, this.maxScroll + this._width, this._height);
+				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
 				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
 			}else{
-				this.scroller.setDimensions(this._width, this._height, this._width, this.maxScroll + this._height);
+				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
 				this.scroller.scrollTo(0, this.scrollPosition * this._scale, false);
 			}
 		},200)
 	}
 	// 视图横屏 设备竖屏 
 	_viewLandscapDeviceP(){
-		this._scale = this._width / this.designWidth;
-		this.pageHeight= this._height / this._scale;
+		this._scale = this._clientWidth / this.designWidth;
+		this.pageHeight= this._clientHeight / this._scale;
 		this.containerFitWindow.rotation = Math.PI / 2;
 		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._width, this._height);
+		this.app.renderer.resize(this._clientWidth, this._clientHeight);
 		switch (this.cropOrigin) {
 			case 'center':
-				this.containerFitWindow.position.set(this._width, (this._height - this.maxScroll)/2);
+				this.containerFitWindow.position.set(this._clientWidth, (this._clientHeight - this.maxScroll)/2);
 				break;
 			case 'bottom':
-				this.containerFitWindow.position.set(this._width, this._height - this.maxScroll);
+				this.containerFitWindow.position.set(this._clientWidth, this._clientHeight - this.maxScroll);
 				break;
 			case 'top':
 			default:
-				this.containerFitWindow.position.set(this._width, 0);
+				this.containerFitWindow.position.set(this._clientWidth, 0);
 				break;
 		}
 
 		setTimeout(() => {
 			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._width, this._height,  this._width, this.maxScroll + this._height);
+				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
 				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
 			}else{
-				this.scroller.setDimensions(this._width, this._height,  this.maxScroll + this._width, this._height);
+				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
 				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
 			}
 		},200)
@@ -501,17 +515,17 @@ console.log('scrollPosition :', this.scrollPosition );
 	}
 	// 视图竖屏 设备竖屏 
 	_viewPortraitDeviceP(){
-		// this._scale = this._height / this.designWidth;
-		// this.pageHeight= this._width / this._scale;
+		// this._scale = this._clientHeight / this.designWidth;
+		// this.pageHeight= this._clientWidth / this._scale;
 		this.containerFitWindow.rotation = 0;
-		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._width, this._height);
+		// this.containerFitWindow.scale.set(this._scale, this._scale);
+		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
 		switch (this.cropOrigin) {
 			case 'center':
-				this.containerFitWindow.position.set(0, (this._width - this.maxScroll)/2);
+				this.containerFitWindow.position.set(0, (this._clientWidth - this.maxScroll)/2);
 				break;
 			case 'bottom':
-				this.containerFitWindow.position.set(0, this._width - this.maxScroll);
+				this.containerFitWindow.position.set(0, this._clientWidth - this.maxScroll);
 				break;
 			case 'top':
 			default:
@@ -521,40 +535,40 @@ console.log('scrollPosition :', this.scrollPosition );
 
 		setTimeout(() => {
 			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._width, this._height, this.maxScroll + this._width, this._height);
+				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
 				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
 			}else{
-				this.scroller.setDimensions(this._width, this._height, this._width, this.maxScroll + this._height);
+				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
 				this.scroller.scrollTo(0, this.scrollPosition * this._scale, false);
 			}
 		},200)
 	}
 	// 视图竖屏 设备横屏 
 	_viewPortraitDeviceL(){
-		this._scale = this._width / this.designWidth;
-		this.pageHeight= this._height / this._scale;
+		// this._scale = this._clientWidth / this.designWidth;
+		// this.pageHeight= this._clientHeight / this._scale;
 		this.containerFitWindow.rotation = - Math.PI / 2;
-		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._width, this._height);
+		// this.containerFitWindow.scale.set(this._scale, this._scale);
+		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
 		switch (this.cropOrigin) {
 			case 'center':
-				this.containerFitWindow.position.set((this._width - this.maxScroll)/2, this._height);
+				this.containerFitWindow.position.set((this._clientWidth - this.maxScroll)/2, this._clientHeight);
 				break;
 			case 'bottom':
-				this.containerFitWindow.position.set(this._width - this.maxScroll, this._height);
+				this.containerFitWindow.position.set(this._clientWidth - this.maxScroll, this._clientHeight);
 				break;
 			case 'top':
 			default:
-				this.containerFitWindow.position.set(0, this._height);
+				this.containerFitWindow.position.set(0, this._clientHeight);
 				break;
 		}
 
 		setTimeout(() => {
 			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._width, this._height,  this._width, this.maxScroll + this._height);
+				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
 				this.scroller.scrollTo(0, this.scrollPosition * this._scale, false);
 			}else{
-				this.scroller.setDimensions(this._width, this._height,  this.maxScroll + this._width, this._height);
+				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
 				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
 			}
 		},200)
