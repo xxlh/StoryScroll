@@ -9,11 +9,11 @@ class StoryScroll {
 	designLength;
 	// abstractContentWidth = 0;	// Scaled Design With
 	// abstractContentLength = 0;	// Scaled Design Length
-	abstractViewWidth = 0;		// First View Width = Content Width (No Crop)
-	abstractViewLength = 0;		// First View Length = abstractDeviceLength/(abstractDeviceWidth/designWidth)
-	abstractDeviceWidth = 0;
-	abstractDeviceLength = 0;
-	abstractMaxScroll = 0;
+	abstractViewWidth;		// First View Width = Content Width (No Crop)
+	abstractViewLength;		// First View Length = abstractDeviceLength/(abstractDeviceWidth/designWidth)
+	abstractDeviceWidth;
+	abstractDeviceLength;
+	abstractMaxScroll = 10000;
 	storyPosition = 0;
 
 	constructor(o) {
@@ -157,7 +157,7 @@ this.maxScroll = this.designLength - this._clientWidth
 			animationDuration: 1000
 		});
 		this.scroller.__enableScrollY = true;
-		this.scrollPosition = 0;
+		this.storyPosition = 0;
 
 		let mousedown = false;
 		document.addEventListener("touchstart", (e) => {
@@ -196,23 +196,14 @@ this.maxScroll = this.designLength - this._clientWidth
 	}
 	
 	_scrollerCallback(left, top, zoom){
-		// console.log('top:', top)
-		// console.log('left:', left)
+		this.scrollPosition = this._getSrollPosition(left, top);
+		this.storyPosition = this.scrollPosition / this._scale;
+		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
 
-this.scrollPosition = this._getSrollPosition(left, top);
-		this.storyPosition = this._getSrollPosition(left, top);
-		setPosition.call(this, this.containerScroll, this.storyPosition);
-
-
-if (this.scrollDirection == 'x') {
-	// this.containerScroll.x = -this.scrollPosition / this._scale;
-	this.scrollPosition = this.scrollPosition / this._scale;
-} else {
-	// this.containerScroll.y = -this.scrollPosition / this._scale;
-	this.scrollPosition = this.scrollPosition / this._scale;
-}
-console.log('scrollPosition :', this.scrollPosition );
+		console.log('top:', top)
+		console.log('left:', left)
 		console.log('scrollPosition :', this.scrollPosition );
+		console.log('storyPosition :', this.storyPosition );
 
 		// Act
 		this.actions.forEach(action => {
@@ -225,17 +216,10 @@ console.log('scrollPosition :', this.scrollPosition );
 			}
 		});
 
-		function setPosition(body, storyPosition) {
-			if (this.direction == 'x') {
-				body.x = -storyPosition / this._scale;
-			} else {
-				body.y = -storyPosition / this._scale;
-			}
-		}
 
 		function triggerActionByPosition(action) {
 			let storedAction = action.sprite.actions[action.hash];
-			if (this.scrollPosition > action.triggerPosition) {
+			if (this.storyPosition > action.triggerPosition) {
 				if (storedAction.status != 'acting' && storedAction.status != 'done') {
 					action.props.onComplete = el => storedAction.status = 'done';
 					action.props.onReverseComplete = el => storedAction.status = 'reversed';
@@ -257,51 +241,51 @@ console.log('scrollPosition :', this.scrollPosition );
 			sprite.actions[hash].status = 'acting';
 		}
 		function triggerActionByStep(action) {
-			// if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
+			// if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
 			action.sprite._originProps = action.sprite._originProps || {};
 			for (var prop in action.props) {
 				if (typeof action.props[prop] == 'object') {
 					for (var subprop in action.props[prop]) {
 						if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = {};
 						if (!action.sprite._originProps[prop][subprop]) action.sprite._originProps[prop][subprop] = action.sprite[prop][subprop];
-						if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
-							action.sprite[prop][subprop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.scrollPosition, action.sprite._originProps[prop][subprop], action.props[prop][subprop]);
-						}else if(action.triggerPosition >= this.scrollPosition){
+						if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
+							action.sprite[prop][subprop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.sprite._originProps[prop][subprop], action.props[prop][subprop]);
+						}else if(action.triggerPosition >= this.storyPosition){
 							action.sprite[prop][subprop] = action.sprite._originProps[prop][subprop];
-						}else if(this.scrollPosition >= action.triggerPosition + action.section){
+						}else if(this.storyPosition >= action.triggerPosition + action.section){
 							action.sprite[prop][subprop] = action.props[prop][subprop];
 						}
 					}
 				} else {
 					if (!action.sprite._originProps[prop]) action.sprite._originProps[prop] = action.sprite[prop];
-					if ( action.triggerPosition < this.scrollPosition && this.scrollPosition < action.triggerPosition + action.section) {
-						action.sprite[prop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.scrollPosition, action.sprite._originProps[prop], action.props[prop]);
-					}else if(action.triggerPosition >= this.scrollPosition){
+					if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
+						action.sprite[prop] = this._scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.sprite._originProps[prop], action.props[prop]);
+					}else if(action.triggerPosition >= this.storyPosition){
 						action.sprite[prop] = action.sprite._originProps[prop];
-					}else if(this.scrollPosition >= action.triggerPosition + action.section){
+					}else if(this.storyPosition >= action.triggerPosition + action.section){
 						action.sprite[prop] = action.props[prop];
 					}
 				}
 			}
 			// } 
 			// else{
-			 	// if (this.scrollPosition >= action.triggerPosition + action.section) {
+			 	// if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 强制达到最终态
 				// if > position => props = ending, else < p => props = start
 				// for (var prop in action.props) {
 				// 	if (typeof action.props[prop] == 'object') {
 				// 		for (var subprop in action.props[prop]) {
-				// 			if (this.scrollPosition >= action.triggerPosition + action.section) {
+				// 			if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 				action.sprite[prop][subprop] =  action.props[prop][subprop];
-				// 			}else if(this.scrollPosition <= action.triggerPosition){
+				// 			}else if(this.storyPosition <= action.triggerPosition){
 				// 				action.sprite[prop][subprop] =  action.sprite._originProps[prop][subprop];
 				// 			}
 				// 		}
 				// 	} else {
 				// 		if (!action.sprite._originProps[prop])
-				// 		if (this.scrollPosition >= action.triggerPosition + action.section) {
+				// 		if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 			action.sprite[prop][subprop] =  action.props[prop];
-				// 		}else if(this.scrollPosition <= action.triggerPosition){
+				// 		}else if(this.storyPosition <= action.triggerPosition){
 				// 			action.sprite[prop][subprop] = action.sprite._originProps[prop];
 				// 		}
 				// 		action.sprite[prop] = action.props[prop];
@@ -475,11 +459,11 @@ console.log('scrollPosition :', this.scrollPosition );
 	
 	// 视图横屏 设备横屏
 	_viewLandscapDeviceL(){
-		this._scale = this._clientHeight / this.designWidth;
-		this.pageHeight= this._clientWidth / this._scale;
-		this.containerFitWindow.rotation = 0;
-		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._clientWidth, this._clientHeight);
+		// this._scale = this._clientHeight / this.designWidth;
+		// this.pageHeight= this._clientWidth / this._scale;
+		// this.containerFitWindow.rotation = 0;
+		// this.containerFitWindow.scale.set(this._scale, this._scale);
+		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
 		switch (this.cropOrigin) {
 			case 'center':
 				this.containerFitWindow.position.set(0, (this._clientWidth - this.maxScroll)/2);
@@ -496,20 +480,20 @@ console.log('scrollPosition :', this.scrollPosition );
 		setTimeout(() => {
 			if(this.scrollDirection == 'x'){
 				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
+				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
 			}else{
 				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
-				this.scroller.scrollTo(0, this.scrollPosition * this._scale, false);
+				this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
 			}
 		},200)
 	}
 	// 视图横屏 设备竖屏 
 	_viewLandscapDeviceP(){
-		this._scale = this._clientWidth / this.designWidth;
-		this.pageHeight= this._clientHeight / this._scale;
-		this.containerFitWindow.rotation = Math.PI / 2;
-		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._clientWidth, this._clientHeight);
+		// this._scale = this._clientWidth / this.designWidth;
+		// this.pageHeight= this._clientHeight / this._scale;
+		// this.containerFitWindow.rotation = Math.PI / 2;
+		// this.containerFitWindow.scale.set(this._scale, this._scale);
+		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
 		switch (this.cropOrigin) {
 			case 'center':
 				this.containerFitWindow.position.set(this._clientWidth, (this._clientHeight - this.maxScroll)/2);
@@ -526,10 +510,10 @@ console.log('scrollPosition :', this.scrollPosition );
 		setTimeout(() => {
 			if(this.scrollDirection == 'x'){
 				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
+				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
 			}else{
 				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
+				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
 			}
 		},200)
 		
@@ -557,10 +541,10 @@ console.log('scrollPosition :', this.scrollPosition );
 		setTimeout(() => {
 			if(this.scrollDirection == 'x'){
 				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
+				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
 			}else{
 				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
-				this.scroller.scrollTo(0, this.scrollPosition * this._scale, false);
+				this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
 			}
 		},200)
 	}
@@ -587,10 +571,10 @@ console.log('scrollPosition :', this.scrollPosition );
 		setTimeout(() => {
 			if(this.scrollDirection == 'x'){
 				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
-				this.scroller.scrollTo(0, this.scrollPosition * this._scale, false);
+				this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
 			}else{
 				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
-				this.scroller.scrollTo(this.scrollPosition * this._scale, 0, false);
+				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
 			}
 		},200)
 		
