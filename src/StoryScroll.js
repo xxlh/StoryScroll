@@ -389,7 +389,7 @@ this.maxScroll = this.designLength - this._clientWidth
 		this.abstractViewWidth = this.designWidth;
 		this.abstractViewLength = this.abstractDeviceLength / this._scale;
 
-		this.containerFitWindow.rotation = getContainerRotation(this.designOrientation, this.deviceOrientation);
+		setContainerRotation(this.containerFitWindow, this.designOrientation, this.deviceOrientation, this.abstractDeviceWidth);
 		this.containerFitWindow.scale.set(this._scale, this._scale);
 		this.app.renderer.resize(this._clientWidth, this._clientHeight);
 
@@ -401,13 +401,6 @@ this.maxScroll = this.designLength - this._clientWidth
 		
 
 		setTimeout(() => {
-			if(this.scrollDirection == 'x'){
-				// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.abstractContentLength, this._clientHeight);
-				// this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-			}else{
-				// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.abstractContentLength);
-				// this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
-			}
 			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
 			this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 		},200)
@@ -428,18 +421,38 @@ this.maxScroll = this.designLength - this._clientWidth
 			}
 		}
 
-		function getContainerRotation(designOrientation, deviceOrientation) {
+		function setContainerRotation(container, designOrientation, deviceOrientation, deviceWidth) {
 			const rotationMap = {
 				design_portrait: {
-					device_portrait: 0,
-					device_landscape: - Math.PI / 2
+					device_portrait: {
+						rotation: 0,
+						offsetX: 0,
+						offsetY: 0
+					},
+					device_landscape: {
+						rotation: - Math.PI / 2,
+						offsetX: 0,
+						offsetY: deviceWidth
+					}
 				},
 				design_landscape: {
-					device_portrait: Math.PI / 2,
-					device_landscape: 0
+					device_portrait: {
+						rotation: Math.PI / 2,
+						offsetX: deviceWidth,
+						offsetY: 0
+					},
+					device_landscape: {
+						rotation: 0,
+						offsetX: 0,
+						offsetY: 0
+					}
 				}
 			}
-			return rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ];
+			container.rotation = rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['rotation'];
+			container.position.set(
+				rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetX'],
+				rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetY']
+			);
 		}
 
 		if(browser.weixin){
@@ -493,10 +506,10 @@ this.maxScroll = this.designLength - this._clientWidth
 			case 'right':
 				this.containerFitWindow.position.set(0, this._clientWidth - this.maxScroll);
 				break;
-			case 'left':
-			default:
-				this.containerFitWindow.position.set(0, 0);
-				break;
+			// case 'left':
+			// default:
+			// 	this.containerFitWindow.position.set(0, 0);
+			// 	break;
 		}
 
 		// setTimeout(() => {
@@ -523,10 +536,10 @@ this.maxScroll = this.designLength - this._clientWidth
 			case 'bottom':
 				this.containerFitWindow.position.set(this._clientWidth, this._clientHeight - this.maxScroll);
 				break;
-			case 'top':
-			default:
-				this.containerFitWindow.position.set(this._clientWidth, 0);
-				break;
+			// case 'top':
+			// default:
+			// 	this.containerFitWindow.position.set(this._clientWidth, 0);
+			// 	break;
 		}
 
 		// setTimeout(() => {
@@ -554,10 +567,10 @@ this.maxScroll = this.designLength - this._clientWidth
 			case 'bottom':
 				this.containerFitWindow.position.set(0, this._clientWidth - this.maxScroll);
 				break;
-			case 'top':
-			default:
-				this.containerFitWindow.position.set(0, 0);
-				break;
+			// case 'top':
+			// default:
+			// 	this.containerFitWindow.position.set(0, 0);
+			// 	break;
 		}
 
 		// setTimeout(() => {
@@ -584,10 +597,10 @@ this.maxScroll = this.designLength - this._clientWidth
 			case 'bottom':
 				this.containerFitWindow.position.set(this._clientWidth - this.maxScroll, this._clientHeight);
 				break;
-			case 'top':
-			default:
-				this.containerFitWindow.position.set(0, this._clientHeight);
-				break;
+			// case 'top':
+			// default:
+			// 	this.containerFitWindow.position.set(0, this._clientHeight);
+			// 	break;
 		}
 
 		// setTimeout(() => {
