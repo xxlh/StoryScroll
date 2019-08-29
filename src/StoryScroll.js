@@ -405,15 +405,23 @@ console.log('scrollPosition :', this.scrollPosition );
 		this.abstractViewWidth = this.designWidth;
 		this.abstractViewLength = this.abstractDeviceLength / this._scale;
 
-		// this.containerFitWindow.rotation = getContainerRotation();
+		this.containerFitWindow.rotation = getContainerRotation(this.designOrientation, this.deviceOrientation);
 		this.containerFitWindow.scale.set(this._scale, this._scale);
 		this.app.renderer.resize(this._clientWidth, this._clientHeight);
 
-		// function getContainerRotation(params) {
-		// 	const rotationMap = {
-
-		// 	}
-		// }
+		function getContainerRotation(designOrientation, deviceOrientation) {
+			const rotationMap = {
+				design_portrait: {
+					device_portrait: 0,
+					device_landscape: - Math.PI / 2
+				},
+				design_landscape: {
+					device_portrait: Math.PI / 2,
+					device_landscape: 0
+				}
+			}
+			return rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ];
+		}
 
 		if(browser.weixin){
 			if(this.designOrientation == 'portrait'){
@@ -517,7 +525,7 @@ console.log('scrollPosition :', this.scrollPosition );
 	_viewPortraitDeviceP(){
 		// this._scale = this._clientHeight / this.designWidth;
 		// this.pageHeight= this._clientWidth / this._scale;
-		this.containerFitWindow.rotation = 0;
+		// this.containerFitWindow.rotation = 0;
 		// this.containerFitWindow.scale.set(this._scale, this._scale);
 		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
 		switch (this.cropOrigin) {
@@ -547,7 +555,7 @@ console.log('scrollPosition :', this.scrollPosition );
 	_viewPortraitDeviceL(){
 		// this._scale = this._clientWidth / this.designWidth;
 		// this.pageHeight= this._clientHeight / this._scale;
-		this.containerFitWindow.rotation = - Math.PI / 2;
+		// this.containerFitWindow.rotation = - Math.PI / 2;
 		// this.containerFitWindow.scale.set(this._scale, this._scale);
 		// this.app.renderer.resize(this._clientWidth, this._clientHeight);
 		switch (this.cropOrigin) {
