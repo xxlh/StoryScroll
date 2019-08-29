@@ -7,8 +7,8 @@ import Scroller from './Scroller';
 class StoryScroll {
 	designWidth;
 	designLength;
-	// abstractContentWidth = 0;	// Scaled Design With
-	// abstractContentLength = 0;	// Scaled Design Length
+	abstractContentWidth = 0;	// Scaled Design With
+	abstractContentLength = 0;	// Scaled Design Length
 	abstractViewWidth;		// First View Width = Content Width (No Crop)
 	abstractViewLength;		// First View Length = abstractDeviceLength/(abstractDeviceWidth/designWidth)
 	abstractDeviceWidth;
@@ -378,10 +378,13 @@ this.maxScroll = this.designLength - this._clientWidth
 	_windowResize() {
 		this.deviceOrientation = getDeviceOrientation.call(this);
 		this.abstractDeviceWidth = this.deviceOrientation == 'portrait' ? this._clientWidth : this._clientHeight;
-		this.abstractDeviceWidth = this.deviceOrientation == 'portrait' ? this._clientWidth : this._clientHeight;
+		this.abstractDeviceLength = this.deviceOrientation == 'portrait' ? this._clientHeight : this._clientWidth;
 
 		this._scale = this.abstractDeviceWidth / this.designWidth;
 		this.abstractMaxScroll = this.designWidth - this.abstractDeviceLength
+
+		this.abstractContentWidth = this.abstractDeviceWidth;
+		this.abstractContentLength = this.designLength * this._scale;
 
 		this.abstractViewWidth = this.designWidth;
 		this.abstractViewLength = this.abstractDeviceLength / this._scale;
@@ -389,6 +392,20 @@ this.maxScroll = this.designLength - this._clientWidth
 		this.containerFitWindow.rotation = getContainerRotation(this.designOrientation, this.deviceOrientation);
 		this.containerFitWindow.scale.set(this._scale, this._scale);
 		this.app.renderer.resize(this._clientWidth, this._clientHeight);
+
+		let scrollerContentWidth = this.deviceOrientation == 'portrait' ? this._clientWidth : this.abstractContentLength;
+		let scrollerContentHeight = this.deviceOrientation == 'portrait' ? this.abstractContentLength : this._clientWidth;
+
+		setTimeout(() => {
+			if(this.scrollDirection == 'x'){
+				// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.abstractContentLength, this._clientHeight);
+				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
+			}else{
+				// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.abstractContentLength);
+				this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
+			}
+			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
+		},200)
 
 		function getDeviceOrientation(params) {
 			this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
@@ -477,15 +494,15 @@ this.maxScroll = this.designLength - this._clientWidth
 				break;
 		}
 
-		setTimeout(() => {
-			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
-				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-			}else{
-				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
-				this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
-			}
-		},200)
+		// setTimeout(() => {
+		// 	if(this.scrollDirection == 'x'){
+		// 		this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
+		// 		this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
+		// 	}else{
+		// 		// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
+		// 		// this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
+		// 	}
+		// },200)
 	}
 	// 视图横屏 设备竖屏 
 	_viewLandscapDeviceP(){
@@ -507,15 +524,15 @@ this.maxScroll = this.designLength - this._clientWidth
 				break;
 		}
 
-		setTimeout(() => {
-			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
-				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-			}else{
-				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
-				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-			}
-		},200)
+		// setTimeout(() => {
+		// 	if(this.scrollDirection == 'x'){
+		// 		this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
+		// 		this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
+		// 	}else{
+		// 		// this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
+		// 		// this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
+		// 	}
+		// },200)
 		
 	}
 	// 视图竖屏 设备竖屏 
@@ -538,15 +555,15 @@ this.maxScroll = this.designLength - this._clientWidth
 				break;
 		}
 
-		setTimeout(() => {
-			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
-				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-			}else{
-				this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
-				this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
-			}
-		},200)
+		// setTimeout(() => {
+		// 	if(this.scrollDirection == 'x'){
+		// 		// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.maxScroll + this._clientWidth, this._clientHeight);
+		// 		// this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
+		// 	}else{
+		// 		this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.maxScroll + this._clientHeight);
+		// 		this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
+		// 	}
+		// },200)
 	}
 	// 视图竖屏 设备横屏 
 	_viewPortraitDeviceL(){
@@ -568,15 +585,15 @@ this.maxScroll = this.designLength - this._clientWidth
 				break;
 		}
 
-		setTimeout(() => {
-			if(this.scrollDirection == 'x'){
-				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
-				this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
-			}else{
-				this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
-				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
-			}
-		},200)
+		// setTimeout(() => {
+		// 	if(this.scrollDirection == 'x'){
+		// 		// this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this._clientWidth, this.maxScroll + this._clientHeight);
+		// 		// this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
+		// 	}else{
+		// 		this.scroller.setDimensions(this._clientWidth, this._clientHeight,  this.maxScroll + this._clientWidth, this._clientHeight);
+		// 		this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
+		// 	}
+		// },200)
 		
 	}
 }
