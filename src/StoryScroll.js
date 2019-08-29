@@ -135,10 +135,10 @@ class StoryScroll {
 	_defaultSetting(o) {
 		this.crop = o.crop || 'longside';	// false, none,longside,shortside
 		this.cropOrigin = o.cropOrigin || 'top';	// center, top,bottom, left,right
-		this.designOrientation = o.orientation || 'portrait';	// 设计稿横竖屏: portrait, landscape
-		this.scrollDirection = o.scrollDirection || 'y';
-		this.designWidth = o.designWidth || 750;
-		this.designLength = o.designLength || 10000;
+		// this.designOrientation = o.orientation || 'portrait';	// 设计稿横竖屏: portrait, landscape
+		this.scrollDirection = o.direction || 'y';
+		this.designWidth = o.width || 750;
+		this.designLength = o.length || 10000;
 		this.actionList = [];
 		this.actions = [];
 
@@ -146,6 +146,7 @@ class StoryScroll {
 		this._width = document.documentElement.clientWidth || window.innerWidth;
 		this._height = document.documentElement.clientHeight || window.innerHeight;
 		this.deviceOrientation = this._width < this._height ? 'portrait' : 'landscape';	// 当前设备横竖屏
+		this.designOrientation = this.scrollDirection == 'y' ? 'portrait' : 'landscape'
 		this.loaderList = [];
 this.maxScroll = this.designLength - this._width
 		
