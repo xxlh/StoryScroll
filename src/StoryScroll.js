@@ -392,10 +392,7 @@ console.log('scrollPosition :', this.scrollPosition );
 	}
 	
 	_windowResize() {
-		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
-		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
-		
-		this.deviceOrientation = this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';
+		this.deviceOrientation = getDeviceOrientation.call(this);
 		this.abstractDeviceWidth = this.deviceOrientation == 'portrait' ? this._clientWidth : this._clientHeight;
 		this.abstractDeviceWidth = this.deviceOrientation == 'portrait' ? this._clientWidth : this._clientHeight;
 
@@ -408,6 +405,22 @@ console.log('scrollPosition :', this.scrollPosition );
 		this.containerFitWindow.rotation = getContainerRotation(this.designOrientation, this.deviceOrientation);
 		this.containerFitWindow.scale.set(this._scale, this._scale);
 		this.app.renderer.resize(this._clientWidth, this._clientHeight);
+
+		function getDeviceOrientation(params) {
+			this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
+			this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
+
+			if (browser.weixin) {
+				// ToTest: 测试好像现在微信不需要特别判断了？
+				if (window.orientation === 180 || window.orientation === 0) {
+					return 'portrait';
+				} else if (window.orientation === 90 || window.orientation === -90) {
+					return 'landscape';
+				}
+			} else {
+				return this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';
+			}
+		}
 
 		function getContainerRotation(designOrientation, deviceOrientation) {
 			const rotationMap = {
