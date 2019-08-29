@@ -148,7 +148,6 @@ class StoryScroll {
 		this.deviceOrientation = this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';	// 当前设备横竖屏
 		this.designOrientation = this.scrollDirection == 'y' ? 'portrait' : 'landscape'
 		this.loaderList = [];
-this.maxScroll = this.designLength - this._clientWidth
 		
 		this.scroller = new Scroller((left, top, zoom) => this._scrollerCallback(left, top, zoom), {
 			zooming: false,
