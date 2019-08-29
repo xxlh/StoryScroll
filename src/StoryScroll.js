@@ -5,13 +5,14 @@ import {TweenMax} from "gsap/TweenMax";
 import Scroller from './Scroller';
 
 class StoryScroll {
-	abstractContentWidth = 0;	// Scaled Design With
-	abstractContentHeight = 0;	// Scaled Design Height
+	// abstractContentWidth = 0;	// Scaled Design With
+	// abstractContentLength = 0;	// Scaled Design Length
 	abstractViewWidth = 0;		// First View Width = Content Width (No Crop)
-	abstractViewHeight = 0;		// First View Height = abstractDeviceHeight/(abstractDeviceWidth/abstractContentWidth)
+	abstractViewLength = 0;		// First View Length = abstractDeviceLength/(abstractDeviceWidth/designWidth)
 	abstractDeviceWidth = 0;
-	abstractDeviceHeight = 0;
+	abstractDeviceLength = 0;
 	abstractMaxScroll = 0;
+	storyPosition = 0;
 
 	constructor(o) {
 		this._defaultSetting(o);
@@ -135,7 +136,7 @@ class StoryScroll {
 		this.designOrientation = o.orientation || 'portrait';	// 设计稿横竖屏: portrait, landscape
 		this.scrollDirection = o.scrollDirection || 'y';
 		this.designWidth = o.designWidth || 750;
-		this.designHeight = o.designHeight || 10000;
+		this.designLength = o.designLength || 10000;
 		this.actionList = [];
 		this.actions = [];
 
@@ -144,6 +145,7 @@ class StoryScroll {
 		this._height = document.documentElement.clientHeight || window.innerHeight;
 		this.deviceOrientation = this._width < this._height ? 'portrait' : 'landscape';	// 当前设备横竖屏
 		this.loaderList = [];
+this.maxScroll = this.designLength - this._width
 		
 		this.scroller = new Scroller((left, top, zoom) => this._scrollerCallback(left, top, zoom), {
 			zooming: false,
@@ -193,23 +195,20 @@ class StoryScroll {
 	_scrollerCallback(left, top, zoom){
 		// console.log('top:', top)
 		// console.log('left:', left)
-		// scrollTo.set({left, top})
-		// this.scrollPosition = scrollTo.getSrollPosition();
-		// scrollToDestination(left, top)
-		
-		// this.scrollPosition = this.deviceOrientation=='portrait' ? top : left;
-		// this.scrollPosition /= this._scale; 
 
-		this.scrollPosition = this._getSrollPosition(left, top);
+this.scrollPosition = this._getSrollPosition(left, top);
+		this.storyPosition = this._getSrollPosition(left, top);
+		setPosition.call(this, this.containerScroll, this.storyPosition);
 
 
-		if (this.scrollDirection == 'x') {
-			this.containerScroll.x = -this.scrollPosition / this._scale;
-			this.scrollPosition = this.scrollPosition / this._scale;
-		} else {
-			this.containerScroll.y = -this.scrollPosition / this._scale;
-			this.scrollPosition = this.scrollPosition / this._scale;
-		}
+if (this.scrollDirection == 'x') {
+	// this.containerScroll.x = -this.scrollPosition / this._scale;
+	this.scrollPosition = this.scrollPosition / this._scale;
+} else {
+	// this.containerScroll.y = -this.scrollPosition / this._scale;
+	this.scrollPosition = this.scrollPosition / this._scale;
+}
+console.log('scrollPosition :', this.scrollPosition );
 		console.log('scrollPosition :', this.scrollPosition );
 
 		// Act
@@ -222,6 +221,14 @@ class StoryScroll {
 				triggerActionSetPin.call(this, action);
 			}
 		});
+
+		function setPosition(body, storyPosition) {
+			if (this.direction == 'x') {
+				body.x = -storyPosition / this._scale;
+			} else {
+				body.y = -storyPosition / this._scale;
+			}
+		}
 
 		function triggerActionByPosition(action) {
 			let storedAction = action.sprite.actions[action.hash];
@@ -385,7 +392,7 @@ class StoryScroll {
 		this._width = document.documentElement.clientWidth || window.innerWidth;
 		this._height = document.documentElement.clientHeight || window.innerHeight;
 		this.deviceOrientation = this._width < this._height ? 'portrait' : 'landscape';
-		// this.abstractMaxScroll = this.designHeight - this.abstractDeviceHeight
+		// this.abstractMaxScroll = this.designLength - this.abstractDeviceHeight
 
 		if(browser.weixin){
 			if(this.designOrientation == 'portrait'){
