@@ -7,13 +7,13 @@ import Scroller from './Scroller';
 class StoryScroll {
 	designWidth;
 	designLength;
-	abstractContentWidth;	// Scaled Design With
-	abstractContentLength;	// Scaled Design Length
-	abstractViewWidth;		// First View Width = Content Width (No Crop)
-	abstractViewLength;		// First View Length = abstractDeviceLength/(abstractDeviceWidth/designWidth)
-	abstractDeviceWidth;
-	abstractDeviceLength;
-	abstractMaxScroll = 10000;
+	contentWidth;	// Scaled Design With
+	contentLength;	// Scaled Design Length
+	viewWidth;		// First View Width = Content Width (No Crop)
+	viewLength;		// First View Length = deviceHeight/(deviceWidth/designWidth)
+	deviceWidth;	// Phsical device width
+	deviceHeight;	// Phsical device height
+	maxScroll = 10000;
 	storyPosition = 0;
 
 	constructor(o) {
@@ -137,14 +137,13 @@ class StoryScroll {
 		this.designWidth = o.width || 750;
 		this.designLength = o.length || 10000;
 		this.debug = o.debug || false;
-		this.actionList = [];
-		this.actions = [];
 
 		// init
 		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
 		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
-		this.deviceOrientation = this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';	// 当前设备横竖屏
 		this.designOrientation = this.scrollDirection == 'y' ? 'portrait' : 'landscape'
+		this.actionList = [];
+		this.actions = [];
 		this.loaderList = [];
 		
 		this.scroller = new Scroller((left, top, zoom) => this._scrollerCallback(left, top, zoom), {
@@ -376,24 +375,24 @@ class StoryScroll {
 	
 	_windowResize() {
 		this.deviceOrientation = getDeviceOrientation.call(this);
-		this.abstractDeviceWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth		: this._clientHeight;
-		this.abstractDeviceLength = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
+		this.deviceWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth		: this._clientHeight;
+		this.deviceHeight = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
 
-		this._scale = this.abstractDeviceWidth / this.designWidth;
-		this.abstractMaxScroll = this.designWidth - this.abstractDeviceLength
+		this._scale = this.deviceWidth / this.designWidth;
+		this.maxScroll = this.designWidth - this.deviceHeight
 
-		this.abstractContentWidth = this.abstractDeviceWidth;
-		this.abstractContentLength = this.designLength * this._scale;
+		this.contentWidth = this.deviceWidth;
+		this.contentLength = this.designLength * this._scale;
 
-		this.abstractViewWidth = this.designWidth;
-		this.abstractViewLength = this.abstractDeviceLength / this._scale;
+		this.viewWidth = this.designWidth;
+		this.viewLength = this.deviceHeight / this._scale;
 
-		setContainerRotation(this.containerFitWindow, this.designOrientation, this.deviceOrientation, this.abstractDeviceWidth);
+		setContainerRotation(this.containerFitWindow, this.designOrientation, this.deviceOrientation, this.deviceWidth);
 		this.containerFitWindow.scale.set(this._scale, this._scale);
 		this.app.renderer.resize(this._clientWidth, this._clientHeight);
 
-		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth			: this.abstractContentLength;
-		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.abstractContentLength	: this._clientWidth;
+		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth			: this.contentLength;
+		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.contentLength	: this._clientWidth;
 		let scrollerLeft = this.deviceOrientation == 'portrait' ?	0					: this.scrollPosition||0;
 		let scrollerTop = this.deviceOrientation == 'portrait' ?	this.scrollPosition||0	: 0;
 
