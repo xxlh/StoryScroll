@@ -377,8 +377,8 @@ this.maxScroll = this.designLength - this._clientWidth
 	
 	_windowResize() {
 		this.deviceOrientation = getDeviceOrientation.call(this);
-		this.abstractDeviceWidth = this.deviceOrientation == 'portrait' ? this._clientWidth : this._clientHeight;
-		this.abstractDeviceLength = this.deviceOrientation == 'portrait' ? this._clientHeight : this._clientWidth;
+		this.abstractDeviceWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth		: this._clientHeight;
+		this.abstractDeviceLength = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
 
 		this._scale = this.abstractDeviceWidth / this.designWidth;
 		this.abstractMaxScroll = this.designWidth - this.abstractDeviceLength
@@ -393,18 +393,23 @@ this.maxScroll = this.designLength - this._clientWidth
 		this.containerFitWindow.scale.set(this._scale, this._scale);
 		this.app.renderer.resize(this._clientWidth, this._clientHeight);
 
-		let scrollerContentWidth = this.deviceOrientation == 'portrait' ? this._clientWidth : this.abstractContentLength;
-		let scrollerContentHeight = this.deviceOrientation == 'portrait' ? this.abstractContentLength : this._clientWidth;
+		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth			: this.abstractContentLength;
+		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.abstractContentLength	: this._clientWidth;
+		let scrollerLeft = this.deviceOrientation == 'portrait' ?	0					: this.scrollPosition||0;
+		let scrollerTop = this.deviceOrientation == 'portrait' ?	this.scrollPosition||0	: 0;
+		console.log(scrollerLeft, scrollerTop);
+		
 
 		setTimeout(() => {
 			if(this.scrollDirection == 'x'){
 				// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this.abstractContentLength, this._clientHeight);
-				this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
+				// this.scroller.scrollTo(this.storyPosition * this._scale, 0, false);
 			}else{
 				// this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this.abstractContentLength);
-				this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
+				// this.scroller.scrollTo(0, this.storyPosition * this._scale, false);
 			}
 			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
+			this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 		},200)
 
 		function getDeviceOrientation(params) {
