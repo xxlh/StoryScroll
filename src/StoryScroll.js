@@ -295,14 +295,10 @@ console.log("storyPosition----"+this.storyPosition)
 		function triggerActionSetPin(action) {
 			let storedAction = action.sprite.actions[action.hash];
 			storedAction.originProps = storedAction.originProps || {};
-			if (!storedAction.originProps[this.scrollDirection]) 
+			if (storedAction.originProps[this.scrollDirection] === undefined) 
 			storedAction.originProps[this.scrollDirection] = action.sprite[this.scrollDirection];
 
 			action.sprite[this.scrollDirection] = storedAction.originProps[this.scrollDirection] - action.triggerPosition + this.storyPosition;
-
-console.log("pinX----"+action.sprite[this.scrollDirection]);
-console.log("originPropsX----"+storedAction.originProps[this.scrollDirection]);
-console.log("triggerPosition----"+action.triggerPosition);
 		}
 	}
 
