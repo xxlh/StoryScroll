@@ -141,6 +141,7 @@ class StoryScroll {
 		this.designWidth = o.width || 750;
 		this.designLength = o.length || 10000;
 		this.debug = o.debug || false;
+		this.appendID = o.appendID;
 
 		// init
 		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
@@ -184,8 +185,9 @@ class StoryScroll {
 
 	_createContainer(o) {
 		this.app = new PIXI.Application( {width: this._clientWidth, height: this._clientHeight, backgroundColor : o.backgroundColor, antialias: true});
-		const main = document.body.appendChild(document.createElement('main'));
-		main.appendChild(this.app.view);
+		// const main = document.body.appendChild(document.createElement('main'));
+		// main.appendChild(this.app.view);
+		document.getElementById(this.appendID).appendChild(this.app.view);
 
 		this.containerFitWindow = new PIXI.Container();
 		this.containerFitWindow.pivot.set(0, 0);
@@ -199,7 +201,7 @@ class StoryScroll {
 		this.scrollPosition = this._getSrollPosition(left, top);
 		this.storyPosition = this.scrollPosition / this._scale;
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
-
+console.log("storyPosition----"+this.storyPosition)
 		// Act
 		this.actions.forEach(action => {
 			if (action.type == 'point') {
@@ -293,9 +295,14 @@ class StoryScroll {
 		function triggerActionSetPin(action) {
 			let storedAction = action.sprite.actions[action.hash];
 			storedAction.originProps = storedAction.originProps || {};
-			if (!storedAction.originProps[this.scrollDirection]) storedAction.originProps[this.scrollDirection] = action.sprite[this.scrollDirection];
+			if (!storedAction.originProps[this.scrollDirection]) 
+			storedAction.originProps[this.scrollDirection] = action.sprite[this.scrollDirection];
 
 			action.sprite[this.scrollDirection] = storedAction.originProps[this.scrollDirection] - action.triggerPosition + this.storyPosition;
+
+console.log("pinX----"+action.sprite[this.scrollDirection]);
+console.log("originPropsX----"+storedAction.originProps[this.scrollDirection]);
+console.log("triggerPosition----"+action.triggerPosition);
 		}
 	}
 
