@@ -141,7 +141,7 @@ class StoryScroll {
 		this.designWidth = o.width || 750;
 		this.designLength = o.length || 10000;
 		this.debug = o.debug || false;
-		this.appendID = o.appendID;
+		this.containerSelector = o.container;
 
 		// init
 		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
@@ -185,9 +185,13 @@ class StoryScroll {
 
 	_createContainer(o) {
 		this.app = new PIXI.Application( {width: this._clientWidth, height: this._clientHeight, backgroundColor : o.backgroundColor, antialias: true});
-		// const main = document.body.appendChild(document.createElement('main'));
-		// main.appendChild(this.app.view);
-		document.getElementById(this.appendID).appendChild(this.app.view);
+		
+		if(this.containerSelector === undefined){
+			const main = document.body.appendChild(document.createElement('main'));
+			main.appendChild(this.app.view);
+		}else{
+			document.querySelector(this.containerSelector).appendChild(this.app.view);
+		}
 
 		this.containerFitWindow = new PIXI.Container();
 		this.containerFitWindow.pivot.set(0, 0);
