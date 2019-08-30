@@ -269,8 +269,8 @@ console.log("storyPosition----"+this.storyPosition)
 				for (var prop in action.props) {
 					if (typeof action.props[prop] == 'object') {
 						for (var subprop in action.props[prop]) {
-							if (!storedAction.originProps[prop]) storedAction.originProps[prop] = {};
-							if (!storedAction.originProps[prop][subprop]) storedAction.originProps[prop][subprop] = action.sprite[prop][subprop];
+							if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = {};
+							if (storedAction.originProps[prop][subprop] === undefined) storedAction.originProps[prop][subprop] = action.sprite[prop][subprop];
 							if (positionStatus == 'before') {
 								action.sprite[prop][subprop] = storedAction.originProps[prop][subprop];
 							} else if (positionStatus == 'after') {
@@ -280,7 +280,7 @@ console.log("storyPosition----"+this.storyPosition)
 							}
 						}
 					} else {
-						if (!storedAction.originProps[prop]) storedAction.originProps[prop] = action.sprite[prop];
+						if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = action.sprite[prop];
 						if (positionStatus == 'before') {
 							action.sprite[prop] = storedAction.originProps[prop];
 						} else if (positionStatus == 'after') {
