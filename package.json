@@ -1,6 +1,6 @@
 {
   "name": "storyscroll",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "The javascript library for story scroll interactions with html5 canvas",
   "main": "index.js",
   "scripts": {
@@ -32,7 +32,6 @@
     "presets": [
       "env",
       "stage-2"
-    ],
-	"plugins": ["transform-es2015-modules-umd"]
+    ]
   }
 }

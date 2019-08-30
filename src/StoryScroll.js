@@ -201,7 +201,7 @@ class StoryScroll {
 		this.scrollPosition = this._getSrollPosition(left, top);
 		this.storyPosition = this.scrollPosition / this._scale;
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
-console.log("storyPosition----"+this.storyPosition)
+
 		// Act
 		this.actions.forEach(action => {
 			if (action.type == 'point') {
