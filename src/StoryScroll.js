@@ -19,7 +19,8 @@ class StoryScroll {
 	constructor(o) {
 		this._defaultSetting(o);
 		this._createContainer(o);
-		window.onresize = e => this._windowResize();
+		// window.onresize = () => this.resizeTimer = this.resizeTimer ? null : setTimeout(()=>this._windowResize(),0);
+		window.onresize = () => this._windowResize();
 		this._windowResize();
 	}
 
@@ -137,6 +138,7 @@ class StoryScroll {
 	}
 	
 	_defaultSetting(o) {
+		// Parameters
 		this.scrollDirection = o.direction || 'y';
 		this.designWidth = o.width || 750;
 		this.designLength = o.length || 10000;
@@ -386,6 +388,7 @@ class StoryScroll {
 		this.deviceWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth		: this._clientHeight;
 		this.deviceHeight = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
 
+		this._scalePrev = this._scale;
 		this._scale = this.deviceWidth / this.designWidth;
 		this.maxScroll = this.designLength - this.deviceHeight
 
@@ -401,8 +404,8 @@ class StoryScroll {
 
 		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this.deviceWidth	: this.contentLength;
 		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.contentLength	: this.deviceWidth;
-		let scrollerLeft = this.deviceOrientation == 'portrait' ?	0					: this.scrollPosition||0;
-		let scrollerTop = this.deviceOrientation == 'portrait' ?	this.scrollPosition||0	: 0;
+		let scrollerLeft = this.deviceOrientation == 'portrait' ? 0 : this.scrollPosition/this._scalePrev*this._scale||0;
+		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : this.scrollPosition/this._scalePrev*this._scale||0;
 
 		setTimeout(() => {
 			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
