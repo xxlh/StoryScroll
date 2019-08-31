@@ -1,6 +1,5 @@
 import * as PIXI from 'pixi.js';
 import * as browser from "judgebrowser"
-import Math from 'mathjs'
 import {TweenMax} from "gsap/TweenMax";
 import Scroller from './Scroller';
 
@@ -19,7 +18,6 @@ class StoryScroll {
 	constructor(o) {
 		this._defaultSetting(o);
 		this._createContainer(o);
-		// window.onresize = () => this.resizeTimer = this.resizeTimer ? null : setTimeout(()=>this._windowResize(),0);
 		window.onresize = () => this._windowResize();
 		this._windowResize();
 	}
@@ -44,12 +42,6 @@ class StoryScroll {
 		else this.containerScroll.addChild(sprite);
 		return sprite;
 	};
-	_createSprite(imgsrc, opt){
-        var newSprite = new PIXI.Sprite.from(imgsrc);
-        this._setProps(newSprite, opt);
-		// this.loaderList.push(imgsrc);
-        return newSprite;
-	}
 
 	spriteAnimated(imgsrcs, o, autoPlay, _parent) {
 		let sprite = this._createAnimatedSprite(imgsrcs, o, autoPlay);
@@ -57,40 +49,6 @@ class StoryScroll {
 		if (_parent) _parent.addChild(sprite);
 		else this.containerScroll.addChild(sprite);
 		if (autoPlay !== false) sprite.play();
-		return sprite;
-	}
-	_createAnimatedSprite(imgsrcs, o, autoPlay) {
-		let textures = [];
-		let AnimatedSpriteInstance = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
-		if (typeof imgsrcs == 'object' && imgsrcs.length > 0) {
-			imgsrcs.forEach(imgsrc => {
-				textures.push(PIXI.Texture.from(imgsrc));
-			});
-			AnimatedSpriteInstance.textures = textures;
-		} else {
-			this.app.loader
-			.add('spritesheet', imgsrcs)
-			.load((loader, resources) => {
-				for (const imgkey in resources.spritesheet.data.frames) {
-					const texture = PIXI.Texture.from(imgkey);
-					const time = resources.spritesheet.data.frames[imgkey].duration;
-					textures.push(time? {texture, time} : texture);
-				}
-				AnimatedSpriteInstance.textures = textures;
-				if (autoPlay !== false) AnimatedSpriteInstance.play();
-			});
-		}
-		this._setProps(AnimatedSpriteInstance, o);
-		return AnimatedSpriteInstance;
-	}
-	_setProps(sprite, props) {
-		if (props) {
-            for (const prop in props) {
-                if (props.hasOwnProperty(prop)) {
-                    sprite[prop] = props[prop];
-                }
-            }
-		}
 		return sprite;
 	}
 
@@ -102,13 +60,6 @@ class StoryScroll {
 		else this.containerScroll.addChild(graphic);
 		return graphic;
 	}
-	
-	_setActions(obj) {
-		const Self = this;
-		obj.act = (props, duration, triggerPosition) => Self.act(obj, props, duration, triggerPosition);
-		obj.actByStep = (props, section, triggerPosition) => Self.actByStep(obj, props, section, triggerPosition);
-		obj.setPin = (triggerPosition, section) => Self.setPin(obj, triggerPosition, section);
-	}
 
 	act(obj, props, duration, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
@@ -118,6 +69,7 @@ class StoryScroll {
 		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
 	}
+
 	actByStep(obj, props, section, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
@@ -126,15 +78,115 @@ class StoryScroll {
 		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
 	}
+
 	setPin(obj, triggerPosition, section) {
-		// if (section === undefined) section = this.maxScroll;
-		// let props = this.scrollDirection == 'x' ? {x: obj.x + section } : {y: obj.y + section };
-		// obj.actByStep(props, section, triggerPosition)
 		if (!obj.actions) obj.actions = {};
 		let hash = this._createHash();
 		obj.actions[hash] = {action:{type:'pin', section, triggerPosition}};
 		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
+	}
+	
+	_scrollerCallback(left, top, zoom){
+		this.scrollPosition = this._getSrollPosition(left, top);
+		this.storyPosition = this.scrollPosition / this._scale;
+		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
+
+		// Act
+		this.actions.forEach(action => {
+			if (action.type == 'point') {
+				triggerActionByPosition.call(this, action);
+			} else if (action.type == 'section') {
+				triggerActionByStep.call(this, action);
+			} else if(action.type == 'pin') {
+				triggerActionSetPin.call(this, action);
+			}
+		});
+
+		if (this.debug) {
+			if (this.debug == 'all') {
+				console.log('top:', top)
+				console.log('left:', left)
+				console.log('scrollPosition :', this.scrollPosition );
+			}
+			console.log('storyPosition :', this.storyPosition );
+		}
+
+
+		function triggerActionByPosition(action) {
+			let storedAction = action.sprite.actions[action.hash];
+			if (this.storyPosition > action.triggerPosition) {
+				if (storedAction.status != 'acting' && storedAction.status != 'done') {
+					action.props.onComplete = el => storedAction.status = 'done';
+					action.props.onReverseComplete = el => storedAction.status = 'reversed';
+					let tweenInstance = TweenMax.to(action.sprite, action.duration, action.props);
+					storedAction.tween = tweenInstance;
+					storedAction.status = 'acting';
+				}
+			} else {
+				// 倒带
+				if (storedAction.status == 'acting' || storedAction.status == 'done') {
+					if (storedAction.tween) {
+						storedAction.status = 'reversing';
+						storedAction.tween.reverse();
+					}
+				}
+			}
+		}
+		function triggerActionByStep(action) {
+			let storedAction = action.sprite.actions[action.hash];
+			if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
+				setProps('during', storedAction, action, this.storyPosition);
+			} else if (this.storyPosition >= action.triggerPosition + action.section) {
+				// 强制达到最终态
+				setProps('after', storedAction, action, this.storyPosition);
+			} else if (this.storyPosition <= action.triggerPosition) {
+				// 强制回复最终态
+				setProps('before', storedAction, action, this.storyPosition);
+			}
+			// ToDo: before, after在多个动画区间bug，after>storyPosition 且 < 下一个区间的triggerPosition
+
+			// 区间最小值, 区间最大值, top, 初始位置, 终点, 速度, 方向
+			function _scrollNum(minNum,maxNum,top,start,end) {
+				return start + ((top - minNum)/(maxNum - minNum)*(end-start));
+			}
+			function setProps(positionStatus, storedAction, action, storyPosition) {
+				positionStatus = positionStatus || 'before';
+				storedAction.originProps = storedAction.originProps || {};
+				for (var prop in action.props) {
+					if (typeof action.props[prop] == 'object') {
+						for (var subprop in action.props[prop]) {
+							if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = {};
+							if (storedAction.originProps[prop][subprop] === undefined) storedAction.originProps[prop][subprop] = action.sprite[prop][subprop];
+							if (positionStatus == 'before') {
+								action.sprite[prop][subprop] = storedAction.originProps[prop][subprop];
+							} else if (positionStatus == 'after') {
+								action.sprite[prop][subprop] = action.props[prop][subprop];
+							} else {
+								action.sprite[prop][subprop] = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop][subprop], action.props[prop][subprop]);
+							}
+						}
+					} else {
+						if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = action.sprite[prop];
+						if (positionStatus == 'before') {
+							action.sprite[prop] = storedAction.originProps[prop];
+						} else if (positionStatus == 'after') {
+							action.sprite[prop] = action.props[prop];
+						} else {
+							action.sprite[prop] = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop], action.props[prop]);
+						}
+					}
+				}
+			}
+		}
+		function triggerActionSetPin(action) {
+			let storedAction = action.sprite.actions[action.hash];
+			storedAction.originProps = storedAction.originProps || {};
+			if (storedAction.originProps[this.scrollDirection] === undefined) 
+			storedAction.originProps[this.scrollDirection] = action.sprite[this.scrollDirection];
+
+			action.sprite[this.scrollDirection] = storedAction.originProps[this.scrollDirection] - action.triggerPosition + this.storyPosition;
+		}
 	}
 	
 	_defaultSetting(o) {
@@ -203,109 +255,84 @@ class StoryScroll {
 		this.app.stage.addChild(this.containerFitWindow);
 	}
 	
-	_scrollerCallback(left, top, zoom){
-		this.scrollPosition = this._getSrollPosition(left, top);
-		this.storyPosition = this.scrollPosition / this._scale;
-		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
+	_windowResize() {
+		this.deviceOrientation = this._getDeviceOrientation();
+		this.deviceWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth		: this._clientHeight;
+		this.deviceHeight = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
 
-		// Act
-		this.actions.forEach(action => {
-			if (action.type == 'point') {
-				triggerActionByPosition.call(this, action);
-			} else if (action.type == 'section') {
-				triggerActionByStep.call(this, action);
-			} else if(action.type == 'pin') {
-				triggerActionSetPin.call(this, action);
-			}
-		});
+		this._scalePrev = this._scale;
+		this._scale = this.deviceWidth / this.designWidth;
+		this.maxScroll = this.designLength - this.deviceHeight
 
-		if (this.debug) {
-			if (this.debug == 'all') {
-				console.log('top:', top)
-				console.log('left:', left)
-				console.log('scrollPosition :', this.scrollPosition );
+		this.contentWidth = this.deviceWidth;
+		this.contentLength = this.designLength * this._scale;
+
+		this.viewWidth = this.designWidth;
+		this.viewLength = this.deviceHeight / this._scale;
+
+		this._setContainerRotation(this.containerFitWindow, this.designOrientation, this.deviceOrientation, this.deviceWidth);
+		this.containerFitWindow.scale.set(this._scale, this._scale);
+		this.app.renderer.resize(this._clientWidth, this._clientHeight);
+
+		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this.deviceWidth	: this.contentLength;
+		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.contentLength	: this.deviceWidth;
+		let scrollerLeft = this.deviceOrientation == 'portrait' ? 0 : this.scrollPosition/this._scalePrev*this._scale||0;
+		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : this.scrollPosition/this._scalePrev*this._scale||0;
+
+		setTimeout(() => {
+			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
+			this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
+		},200)
+	}
+
+	_getDeviceOrientation() {
+		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
+		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
+
+		if (browser.weixin) {
+			// ToTest: 测试好像现在微信不需要特别判断了？
+			if (window.orientation === 180 || window.orientation === 0) {
+				return 'portrait';
+			} else if (window.orientation === 90 || window.orientation === -90) {
+				return 'landscape';
 			}
-			console.log('storyPosition :', this.storyPosition );
+		} else {
+			return this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';
 		}
+	}
 
-
-		function triggerActionByPosition(action) {
-			let storedAction = action.sprite.actions[action.hash];
-			if (this.storyPosition > action.triggerPosition) {
-				if (storedAction.status != 'acting' && storedAction.status != 'done') {
-					action.props.onComplete = el => storedAction.status = 'done';
-					action.props.onReverseComplete = el => storedAction.status = 'reversed';
-					let tweenInstance = TweenMax.to(action.sprite, action.duration, action.props);
-					_setActStatus(action.sprite, action.hash, tweenInstance);
+	_setContainerRotation(container, designOrientation, deviceOrientation, deviceWidth) {
+		const rotationMap = {
+			design_portrait: {
+				device_portrait: {
+					rotation: 0,
+					offsetX: 0,
+					offsetY: 0
+				},
+				device_landscape: {
+					rotation: - Math.PI / 2,
+					offsetX: 0,
+					offsetY: deviceWidth
 				}
-			} else {
-				// 倒带
-				if (storedAction.status == 'acting' || storedAction.status == 'done') {
-					if (storedAction.tween) {
-						storedAction.status = 'reversing';
-						storedAction.tween.reverse();
-					}
-				}
-			}
-		}
-		function _setActStatus(sprite, hash, tweenInstance) {
-			sprite.actions[hash].tween = tweenInstance;
-			sprite.actions[hash].status = 'acting';
-		}
-		function triggerActionByStep(action) {
-			let storedAction = action.sprite.actions[action.hash];
-			if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
-				setProps('during', storedAction, action, this.storyPosition);
-			} else if (this.storyPosition >= action.triggerPosition + action.section) {
-				// 强制达到最终态
-				setProps('after', storedAction, action, this.storyPosition);
-			} else if (this.storyPosition <= action.triggerPosition) {
-				// 强制回复最终态
-				setProps('before', storedAction, action, this.storyPosition);
-			}
-			// ToDo: before, after在多个动画区间bug，after>storyPosition 且 < 下一个区间的triggerPosition
-
-			// 区间最小值, 区间最大值, top, 初始位置, 终点, 速度, 方向
-			function _scrollNum(minNum,maxNum,top,start,end) {
-				return start + ((top - minNum)/(maxNum - minNum)*(end-start));
-			}
-			function setProps(positionStatus, storedAction, action, storyPosition) {
-				positionStatus = positionStatus || 'before';
-				storedAction.originProps = storedAction.originProps || {};
-				for (var prop in action.props) {
-					if (typeof action.props[prop] == 'object') {
-						for (var subprop in action.props[prop]) {
-							if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = {};
-							if (storedAction.originProps[prop][subprop] === undefined) storedAction.originProps[prop][subprop] = action.sprite[prop][subprop];
-							if (positionStatus == 'before') {
-								action.sprite[prop][subprop] = storedAction.originProps[prop][subprop];
-							} else if (positionStatus == 'after') {
-								action.sprite[prop][subprop] = action.props[prop][subprop];
-							} else {
-								action.sprite[prop][subprop] = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop][subprop], action.props[prop][subprop]);
-							}
-						}
-					} else {
-						if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = action.sprite[prop];
-						if (positionStatus == 'before') {
-							action.sprite[prop] = storedAction.originProps[prop];
-						} else if (positionStatus == 'after') {
-							action.sprite[prop] = action.props[prop];
-						} else {
-							action.sprite[prop] = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop], action.props[prop]);
-						}
-					}
+			},
+			design_landscape: {
+				device_portrait: {
+					rotation: Math.PI / 2,
+					offsetX: deviceWidth,
+					offsetY: 0
+				},
+				device_landscape: {
+					rotation: 0,
+					offsetX: 0,
+					offsetY: 0
 				}
 			}
 		}
-		function triggerActionSetPin(action) {
-			let storedAction = action.sprite.actions[action.hash];
-			storedAction.originProps = storedAction.originProps || {};
-			if (storedAction.originProps[this.scrollDirection] === undefined) 
-			storedAction.originProps[this.scrollDirection] = action.sprite[this.scrollDirection];
-
-			action.sprite[this.scrollDirection] = storedAction.originProps[this.scrollDirection] - action.triggerPosition + this.storyPosition;
-		}
+		container.rotation = rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['rotation'];
+		container.position.set(
+			rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetX'],
+			rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetY']
+		);
 	}
 
 	_getSpriteTriggerPosition(sprite) {
@@ -314,42 +341,6 @@ class StoryScroll {
 		return spritePosition - this.pageHeight * 2/3;
 	}
 
-	_createHash (hashLength) {
-		return Array.from(Array(Number(hashLength) || 24), () => Math.floor(Math.random() * 36).toString(36)).join('');
-	}
-
-	/* deprecated
-	_getSrollPosition(left, top) {
-		if (this.designOrientation == 'portrait') {
-			if (this.deviceOrientation == 'portrait') {
-				if (this.scrollDirection == 'x') {
-					return left;
-				} else {
-					return top;
-				}
-			} else {
-				if (this.scrollDirection == 'x') {
-					return top;
-				} else {
-					return left;
-				}
-			}
-		} else {
-			if (this.deviceOrientation == 'portrait') {
-				if (this.scrollDirection == 'x') {
-					return top;
-				} else {
-					return left;
-				}
-			} else {
-				if (this.scrollDirection == 'x') {
-					return left;
-				} else {
-					return top;
-				}
-			}
-		}
-	} */
 	_getSrollPosition(left, top) {
 		let positionMapFunctionGenerator = (left, top) => {
 			let positionMap = {
@@ -383,85 +374,58 @@ class StoryScroll {
 		return getPositionFromMap(this.designOrientation, this.deviceOrientation, this.scrollDirection);
 	}
 	
-	_windowResize() {
-		this.deviceOrientation = getDeviceOrientation.call(this);
-		this.deviceWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth		: this._clientHeight;
-		this.deviceHeight = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
-
-		this._scalePrev = this._scale;
-		this._scale = this.deviceWidth / this.designWidth;
-		this.maxScroll = this.designLength - this.deviceHeight
-
-		this.contentWidth = this.deviceWidth;
-		this.contentLength = this.designLength * this._scale;
-
-		this.viewWidth = this.designWidth;
-		this.viewLength = this.deviceHeight / this._scale;
-
-		setContainerRotation(this.containerFitWindow, this.designOrientation, this.deviceOrientation, this.deviceWidth);
-		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._clientWidth, this._clientHeight);
-
-		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this.deviceWidth	: this.contentLength;
-		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.contentLength	: this.deviceWidth;
-		let scrollerLeft = this.deviceOrientation == 'portrait' ? 0 : this.scrollPosition/this._scalePrev*this._scale||0;
-		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : this.scrollPosition/this._scalePrev*this._scale||0;
-
-		setTimeout(() => {
-			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
-			this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
-		},200)
-		
-
-		function getDeviceOrientation(params) {
-			this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
-			this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
-
-			if (browser.weixin) {
-				// ToTest: 测试好像现在微信不需要特别判断了？
-				if (window.orientation === 180 || window.orientation === 0) {
-					return 'portrait';
-				} else if (window.orientation === 90 || window.orientation === -90) {
-					return 'landscape';
+	_createSprite(imgsrc, opt){
+        var newSprite = new PIXI.Sprite.from(imgsrc);
+        this._setProps(newSprite, opt);
+		// this.loaderList.push(imgsrc);
+        return newSprite;
+	}
+	
+	_createAnimatedSprite(imgsrcs, o, autoPlay) {
+		let textures = [];
+		let AnimatedSpriteInstance = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
+		if (typeof imgsrcs == 'object' && imgsrcs.length > 0) {
+			imgsrcs.forEach(imgsrc => {
+				textures.push(PIXI.Texture.from(imgsrc));
+			});
+			AnimatedSpriteInstance.textures = textures;
+		} else {
+			this.app.loader
+			.add('spritesheet', imgsrcs)
+			.load((loader, resources) => {
+				for (const imgkey in resources.spritesheet.data.frames) {
+					const texture = PIXI.Texture.from(imgkey);
+					const time = resources.spritesheet.data.frames[imgkey].duration;
+					textures.push(time? {texture, time} : texture);
 				}
-			} else {
-				return this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';
-			}
+				AnimatedSpriteInstance.textures = textures;
+				if (autoPlay !== false) AnimatedSpriteInstance.play();
+			});
 		}
+		this._setProps(AnimatedSpriteInstance, o);
+		return AnimatedSpriteInstance;
+	}
 
-		function setContainerRotation(container, designOrientation, deviceOrientation, deviceWidth) {
-			const rotationMap = {
-				design_portrait: {
-					device_portrait: {
-						rotation: 0,
-						offsetX: 0,
-						offsetY: 0
-					},
-					device_landscape: {
-						rotation: - Math.PI / 2,
-						offsetX: 0,
-						offsetY: deviceWidth
-					}
-				},
-				design_landscape: {
-					device_portrait: {
-						rotation: Math.PI / 2,
-						offsetX: deviceWidth,
-						offsetY: 0
-					},
-					device_landscape: {
-						rotation: 0,
-						offsetX: 0,
-						offsetY: 0
-					}
-				}
-			}
-			container.rotation = rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['rotation'];
-			container.position.set(
-				rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetX'],
-				rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetY']
-			);
+	_setActions(obj) {
+		const Self = this;
+		obj.act = (props, duration, triggerPosition) => Self.act(obj, props, duration, triggerPosition);
+		obj.actByStep = (props, section, triggerPosition) => Self.actByStep(obj, props, section, triggerPosition);
+		obj.setPin = (triggerPosition, section) => Self.setPin(obj, triggerPosition, section);
+	}
+
+	_setProps(sprite, props) {
+		if (props) {
+            for (const prop in props) {
+                if (props.hasOwnProperty(prop)) {
+                    sprite[prop] = props[prop];
+                }
+            }
 		}
+		return sprite;
+	}
+
+	_createHash (hashLength) {
+		return Array.from(Array(Number(hashLength) || 24), () => Math.floor(Math.random() * 36).toString(36)).join('');
 	}
 }
 
