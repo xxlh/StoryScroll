@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
-import * as browser from "judgebrowser"
+window.PIXI = PIXI ;
+import 'pixi-projection';
+import * as browser from "judgebrowser";
 import {TweenMax} from "gsap/TweenMax";
 import Scroller from './Scroller';
 

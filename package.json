@@ -33,6 +33,11 @@
       "env",
       "stage-2"
     ],
-	"plugins": ["transform-es2015-modules-umd"]
+    "plugins": [
+      "transform-es2015-modules-umd"
+    ]
+  },
+  "dependencies": {
+    "pixi-projection": "^0.3.5"
   }
 }
