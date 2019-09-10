@@ -1,6 +1,6 @@
 {
   "name": "storyscroll",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "The javascript library for story scroll interactions with html5 canvas",
   "main": "index.js",
   "scripts": {
