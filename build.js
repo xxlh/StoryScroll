@@ -11,10 +11,10 @@ const pkg = require('./package');
 const date = new Date();
 
 const banner = `/*
- * anime.js v${ pkg.version }
- * (c) ${ date.getFullYear() } Julian Garnier
- * Released under the MIT license
- * animejs.com
+ * ${ pkg.name }.js v${ pkg.version }
+ * (c) ${ date.getFullYear() } Little Linghuan & Esone
+ * Released under the GPL license
+ * ieexx.com
  */
 `;
 

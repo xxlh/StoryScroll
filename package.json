@@ -11,7 +11,8 @@
     "demo": "node ./examples/server-script.js",
     "cleanLib": "./node_modules/.bin/rimraf lib",
     "bableBuild": "./node_modules/.bin/babel src --out-dir lib --ignore '*.test.js'",
-    "prepublish": "npm run cleanLib && npm run bableBuild"
+    "prepublish-deprecated": "npm run cleanLib && npm run bableBuild",
+    "prepublish": "npm run cleanLib && node build"
   },
   "repository": {
     "type": "git",
