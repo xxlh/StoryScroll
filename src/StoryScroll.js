@@ -62,6 +62,17 @@ class StoryScroll {
 		return graphic;
 	}
 
+	text(textCont, o, style_o,_parent) {
+		let style = new PIXI.TextStyle();
+		this._setProps(style, style_o);
+		let text = new PIXI.Text(textCont,style);
+		this._setProps(text, o);
+		this._setActions(text);
+		if (_parent) _parent.addChild(text);
+		else this.containerScroll.addChild(text);
+		return text;
+	};
+
 	act(obj, props, duration, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
