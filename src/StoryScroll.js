@@ -87,6 +87,13 @@ class StoryScroll {
 		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
 	}
+
+	stop(){
+		this.scrollDirection == 'y' ? this.scroller.options.scrollingY = false : this.scroller.options.scrollingX = false;
+	}
+	goOn(){
+		this.scrollDirection == 'y' ? this.scroller.options.scrollingY = true : this.scroller.options.scrollingX = true;
+	}
 	
 	_scrollerCallback(left, top, zoom){
 		this.scrollPosition = this._getSrollPosition(left, top);
