@@ -1,12 +1,9 @@
 const fs = require('fs');
 const { rollup } = require('rollup');
 const { minify } = require('uglify-js');
-const buble = require('rollup-plugin-buble');
 const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
-const globals = require('rollup-plugin-node-globals');
-const builtins = require('rollup-plugin-node-builtins');
 const pretty = require('pretty-bytes');
 const sizer = require('gzip-size');
 const pkg = require('./package');
@@ -34,24 +31,8 @@ rollup({
     babel({
       exclude: 'node_modules/**' // ?????????
     }),
-    // globals(),
-    // builtins(),
     resolve(),
-    commonjs(),
-    // buble({
-    //   transforms: {
-    //     modules: false,
-    //     dangerousForOf: true
-    //   },
-    //   targets: {
-    //     firefox: 32,
-    //     chrome: 24,
-    //     safari: 6,
-    //     opera: 15,
-    //     edge: 10,
-    //     ie: 10
-    //   }
-    // })
+    commonjs()
   ]
 }).then(bun => {
   bun.write({
@@ -76,7 +57,7 @@ rollup({
 
     // produce minified output
     const { code } = minify(data);
-    // fs.writeFileSync(pkg.umd, `${banner}\n${code}`); // with banner
+    fs.writeFileSync(pkg.umd, `${banner}\n${code}`); // with banner
 
     // output gzip size
     const int = sizer.sync(code);
