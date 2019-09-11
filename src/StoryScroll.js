@@ -102,7 +102,7 @@ class StoryScroll {
 	stop(){
 		this.scrollDirection == 'y' ? this.scroller.options.scrollingY = false : this.scroller.options.scrollingX = false;
 	}
-	goOn(){
+	play(){
 		this.scrollDirection == 'y' ? this.scroller.options.scrollingY = true : this.scroller.options.scrollingX = true;
 	}
 	
