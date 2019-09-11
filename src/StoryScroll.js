@@ -77,6 +77,16 @@ class StoryScroll {
 	act(obj, props, duration, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
+
+		for (const prop in props) {
+			if (typeof props[prop] == 'object') {
+				let hash = this._createHash(8);
+				obj.actions[hash] = {action: {type:'point', propsRoot:prop, props:props[prop], duration, triggerPosition}};
+				this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
+				delete props[prop];
+			}
+		}
+
 		let hash = this._createHash(8);
 		obj.actions[hash] = {action: {type:'point', props, duration, triggerPosition}};
 		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
@@ -137,9 +147,11 @@ class StoryScroll {
 			let storedAction = action.sprite.actions[action.hash];
 			if (this.storyPosition > action.triggerPosition) {
 				if (storedAction.status != 'acting' && storedAction.status != 'done') {
-					action.props.onComplete = el => storedAction.status = 'done';
-					action.props.onReverseComplete = el => storedAction.status = 'reversed';
-					let tweenInstance = TweenMax.to(action.sprite, action.duration, action.props);
+					let tweenTarget = action.propsRoot&&action.sprite[action.propsRoot] ? action.sprite[action.propsRoot] : action.sprite;
+					let tweenVars = {...action.props};
+					tweenVars.onComplete = el => storedAction.status = 'done';
+					tweenVars.onReverseComplete = el => storedAction.status = 'reversed';
+					let tweenInstance = TweenMax.to(tweenTarget, action.duration, tweenVars);
 					storedAction.tween = tweenInstance;
 					storedAction.status = 'acting';
 				}
