@@ -29,6 +29,7 @@ class StoryScroll {
 		chapter.sprite = (imgsrc, o) => this.sprite(imgsrc, o, chapter);
 		chapter.spriteAnimated = (imgsrcs, o, autoPlay) => this.spriteAnimated(imgsrcs, o, autoPlay, chapter);
 		chapter.graphic = (o) => this.graphic(o, chapter);
+		chapter.text = (textCont, o, style_o) => this.text(textCont, o, style_o, chapter);
 		chapter.chapter = (o) => this.chapter(o, chapter);
 		this._setActions(chapter);
 		if (_parent) _parent.addChild(chapter);
@@ -62,6 +63,17 @@ class StoryScroll {
 		return graphic;
 	}
 
+	text(textCont, o, style_o,_parent) {
+		let style = new PIXI.TextStyle();
+		this._setProps(style, style_o);
+		let text = new PIXI.Text(textCont,style);
+		this._setProps(text, o);
+		this._setActions(text);
+		if (_parent) _parent.addChild(text);
+		else this.containerScroll.addChild(text);
+		return text;
+	};
+
 	act(obj, props, duration, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
@@ -86,6 +98,13 @@ class StoryScroll {
 		obj.actions[hash] = {action:{type:'pin', section, triggerPosition}};
 		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
+	}
+
+	stop(){
+		this.scrollDirection == 'y' ? this.scroller.options.scrollingY = false : this.scroller.options.scrollingX = false;
+	}
+	play(){
+		this.scrollDirection == 'y' ? this.scroller.options.scrollingY = true : this.scroller.options.scrollingX = true;
 	}
 	
 	_scrollerCallback(left, top, zoom){
