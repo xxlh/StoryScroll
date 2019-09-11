@@ -1,8 +1,10 @@
-import * as PIXI from './pixi.js';
+import * as PIXI from 'pixi.js';
 import * as browser from "./browser";
 import {TweenMax} from "gsap/TweenMax";
 import Scroller from './Scroller';
 
+global.PIXI = PIXI;
+require("pixi-projection");
 
 class StoryScroll {
 	designWidth;
