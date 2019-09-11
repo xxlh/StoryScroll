@@ -18,11 +18,26 @@ const banner = `/*
  */
 `;
 
-console.info('Compiling... 😤');
-
-var external = [...Object.keys(pkg.dependencies), 'gsap/TweenMax'];
+const external = [...Object.keys(pkg.dependencies), 'gsap/TweenMax'];
 external.splice(external.indexOf('gsap'), 1);
 external.splice(external.indexOf('judgebrowser'), 1);
+
+
+console.info('Compiling... 😤');
+
+rollup({
+  input: 'src/pixi.js',
+  external: external,
+  plugins: [
+    commonjs()
+  ]
+}).then(bun => {
+  bun.write({
+    banner,
+    format: 'cjs',
+    file: 'lib/pixi.js'
+  });
+});
 
 rollup({
   input: 'src/StoryScroll.js',
