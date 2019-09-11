@@ -29,6 +29,7 @@ class StoryScroll {
 		chapter.sprite = (imgsrc, o) => this.sprite(imgsrc, o, chapter);
 		chapter.spriteAnimated = (imgsrcs, o, autoPlay) => this.spriteAnimated(imgsrcs, o, autoPlay, chapter);
 		chapter.graphic = (o) => this.graphic(o, chapter);
+		chapter.text = (textCont, o, style_o) => this.text(textCont, o, style_o, chapter);
 		chapter.chapter = (o) => this.chapter(o, chapter);
 		this._setActions(chapter);
 		if (_parent) _parent.addChild(chapter);
