@@ -77,7 +77,7 @@ class StoryScroll {
 		return text;
 	};
 
-	act(obj, props, duration, triggerPosition) {
+	action(obj, props, duration, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
 
@@ -100,7 +100,7 @@ class StoryScroll {
 		return obj;
 	}
 
-	actByStep(obj, props, section, triggerPosition) {
+	actionByStep(obj, props, section, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
 		let hash = this._createHash(8);
@@ -118,10 +118,12 @@ class StoryScroll {
 	}
 
 	stop(){
-		this.scrollDirection == 'y' ? this.scroller.options.scrollingY = false : this.scroller.options.scrollingX = false;
+		this.scroller.options.scrollingX = false;
+		this.scroller.options.scrollingY = false;
 	}
 	play(){
-		this.scrollDirection == 'y' ? this.scroller.options.scrollingY = true : this.scroller.options.scrollingX = true;
+		this.scroller.options.scrollingX = true;
+		this.scroller.options.scrollingY = true;
 	}
 	
 	_scrollerCallback(left, top, zoom){
@@ -446,8 +448,8 @@ class StoryScroll {
 
 	_setActions(obj) {
 		const Self = this;
-		obj.act = (props, duration, triggerPosition) => Self.act(obj, props, duration, triggerPosition);
-		obj.actByStep = (props, section, triggerPosition) => Self.actByStep(obj, props, section, triggerPosition);
+		obj.action = (props, duration, triggerPosition) => Self.action(obj, props, duration, triggerPosition);
+		obj.actionByStep = (props, section, triggerPosition) => Self.actionByStep(obj, props, section, triggerPosition);
 		obj.setPin = (triggerPosition, section) => Self.setPin(obj, triggerPosition, section);
 	}
 
