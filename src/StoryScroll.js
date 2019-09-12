@@ -80,10 +80,14 @@ class StoryScroll {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
 
+		let commonProps = {};
+		for (const prop in props) {
+			if (!obj[prop] && typeof props[prop] != 'function') commonProps[prop] = props[prop];
+		}
 		for (const prop in props) {
 			if (typeof props[prop] == 'object' && obj[prop]) {
 				let hash = this._createHash(8);
-				obj.actions[hash] = {action: {type:'point', propsRoot:prop, props:props[prop], duration, triggerPosition}};
+				obj.actions[hash] = {action: {type:'point', propsRoot:prop, props:{...props[prop], ...commonProps}, duration, triggerPosition}};
 				this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
 				delete props[prop];
 			}
