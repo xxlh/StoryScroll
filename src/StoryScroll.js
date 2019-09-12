@@ -147,7 +147,7 @@ class StoryScroll {
 
 		function triggerActionByPosition(action) {
 			let storedAction = action.sprite.actions[action.hash];
-			if (this.storyPosition > action.triggerPosition) {
+			if (this.storyPosition >= action.triggerPosition) {
 				if (storedAction.status != 'acting' && storedAction.status != 'done') {
 					let tweenTarget = action.propsRoot ? action.sprite[action.propsRoot] : action.sprite;
 					let tweenVars = {...action.props};
@@ -169,12 +169,12 @@ class StoryScroll {
 		}
 		function triggerActionByStep(action) {
 			let storedAction = action.sprite.actions[action.hash];
-			if ( action.triggerPosition < this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
+			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
 				setProps('during', storedAction, action, this.storyPosition);
 			} else if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 强制达到最终态
 				setProps('after', storedAction, action, this.storyPosition);
-			} else if (this.storyPosition <= action.triggerPosition) {
+			} else if (this.storyPosition < action.triggerPosition) {
 				// 强制回复最终态
 				setProps('before', storedAction, action, this.storyPosition);
 			}
@@ -235,7 +235,6 @@ class StoryScroll {
 		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
 		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
 		this.designOrientation = this.scrollDirection == 'y' ? 'portrait' : 'landscape'
-		this.actionList = [];
 		this.actions = [];
 		this.loaderList = [];
 		
