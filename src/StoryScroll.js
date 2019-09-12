@@ -77,14 +77,22 @@ class StoryScroll {
 		return text;
 	};
 
+	act(obj, props, duration) {
+		let commonProps = this._getCommonProps(obj, props);
+		for (const prop in props) {
+			if (typeof props[prop] == 'object' && obj[prop]) {
+				TweenMax.to(obj[prop], duration, {...props[prop], ...commonProps});
+				delete props[prop];
+			}
+		}
+		TweenMax.to(obj, duration, props);
+	}
+
 	action(obj, props, duration, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
 
-		let commonProps = {};
-		for (const prop in props) {
-			if (!obj[prop] && typeof props[prop] != 'function') commonProps[prop] = props[prop];
-		}
+		let commonProps = this._getCommonProps(obj, props);
 		for (const prop in props) {
 			if (typeof props[prop] == 'object' && obj[prop]) {
 				let hash = this._createHash(8);
@@ -375,6 +383,14 @@ class StoryScroll {
 		);
 	}
 
+	_getCommonProps(obj, props) {
+		let commonProps = {};
+		for (const prop in props) {
+			if (!obj[prop] && typeof props[prop] != 'function') commonProps[prop] = props[prop];
+		}
+		return commonProps;
+	}
+
 	_getSpriteTriggerPosition(sprite) {
 		let spritePosition = this.scrollDirection == 'x' ? sprite.x : sprite.y;
 		if (sprite.parent && sprite.parent.name != 'story') return spritePosition + this._getSpriteTriggerPosition(sprite.parent);
@@ -448,6 +464,7 @@ class StoryScroll {
 
 	_setActions(obj) {
 		const Self = this;
+		obj.act = (props, duration) => Self.act(obj, props, duration);
 		obj.action = (props, duration, triggerPosition) => Self.action(obj, props, duration, triggerPosition);
 		obj.actionByStep = (props, section, triggerPosition) => Self.actionByStep(obj, props, section, triggerPosition);
 		obj.setPin = (triggerPosition, section) => Self.setPin(obj, triggerPosition, section);
