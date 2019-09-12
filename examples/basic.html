@@ -11,16 +11,15 @@
 	<script>
 	// init controller
 	var story = new StoryScroll ({
-		crop: 'longside',	// false, none,longside,shortside
-		cropOrigin: 'top',	// center, top,bottom, left,right
-		orientation: 'landscape',
-		scrollDirection: 'x',
-		maxScroll: 20000,
-		backgroundColor: 0x000000
+		direction: 'x',
+		width: 750,
+		length: 20000,
+		debug: true,
+		bgcolor: 0x000000
 	});
 	
 	// create a graphic
-	var graphic = story.graphic({x:40, y:540}).act({x: 0,y:400}, 0.8);
+	var graphic = story.graphic({x:40, y:540}).action({x: 0,y:400}, 0.8);
 	graphic.beginFill(0xDE3249);
 	graphic.drawRect(50, 50, 100, 100);
 	graphic.endFill();

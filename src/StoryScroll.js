@@ -20,7 +20,7 @@ class StoryScroll {
 	storyPosition = 0;
 
 	constructor(o) {
-		this._defaultSetting(o);
+		this._defaultSetting(o||{});
 		this._createContainer(o);
 		window.onresize = () => this._windowResize();
 		this._windowResize();
@@ -245,6 +245,7 @@ class StoryScroll {
 		this.designLength = o.length || 10000;
 		this.debug = o.debug || false;
 		this.containerSelector = o.container;
+		this.backgroundColor = o.bgcolor;
 
 		// init
 		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
@@ -286,7 +287,7 @@ class StoryScroll {
 	};
 
 	_createContainer(o) {
-		this.app = new PIXI.Application( {width: this._clientWidth, height: this._clientHeight, backgroundColor : o.backgroundColor, antialias: true});
+		this.app = new PIXI.Application( {width: this._clientWidth, height: this._clientHeight, backgroundColor : this.backgroundColor, antialias: true});
 		
 		if(this.containerSelector === undefined){
 			const main = document.body.appendChild(document.createElement('main'));
