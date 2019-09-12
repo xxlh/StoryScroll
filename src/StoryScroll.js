@@ -81,7 +81,7 @@ class StoryScroll {
 		if (!obj.actions) obj.actions = {};
 
 		for (const prop in props) {
-			if (typeof props[prop] == 'object') {
+			if (typeof props[prop] == 'object' && obj[prop]) {
 				let hash = this._createHash(8);
 				obj.actions[hash] = {action: {type:'point', propsRoot:prop, props:props[prop], duration, triggerPosition}};
 				this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
@@ -149,7 +149,7 @@ class StoryScroll {
 			let storedAction = action.sprite.actions[action.hash];
 			if (this.storyPosition > action.triggerPosition) {
 				if (storedAction.status != 'acting' && storedAction.status != 'done') {
-					let tweenTarget = action.propsRoot&&action.sprite[action.propsRoot] ? action.sprite[action.propsRoot] : action.sprite;
+					let tweenTarget = action.propsRoot ? action.sprite[action.propsRoot] : action.sprite;
 					let tweenVars = {...action.props};
 					tweenVars.onComplete = el => storedAction.status = 'done';
 					tweenVars.onReverseComplete = el => storedAction.status = 'reversed';
