@@ -151,13 +151,13 @@ class StoryScroll {
 				if (storedAction.status != 'acting' && storedAction.status != 'done') {
 					let tweenTarget = action.propsRoot ? action.sprite[action.propsRoot] : action.sprite;
 					let tweenVars = {...action.props};
-					tweenVars.onComplete = el => storedAction.status = 'done';
-					tweenVars.onReverseComplete = el => storedAction.status = 'reversed';
+					tweenVars.onComplete = function(){storedAction.status = 'done'; action.props.onComplete&&action.props.onComplete.call(this)};
+					tweenVars.onReverseComplete = function(){storedAction.status = 'reversed'; action.props.onReverseComplete&&action.props.onReverseComplete.call(this)}
 					let tweenInstance = TweenMax.to(tweenTarget, action.duration, tweenVars);
 					storedAction.tween = tweenInstance;
 					storedAction.status = 'acting';
 				}
-			} else {
+			} else if(action.props.reverse !== false){
 				// 倒带
 				if (storedAction.status == 'acting' || storedAction.status == 'done') {
 					if (storedAction.tween) {
