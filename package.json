@@ -18,12 +18,38 @@
     "type": "git",
     "url": "git+https://github.com/xxlh/StoryScroll.git"
   },
-  "author": "xlh",
-  "license": "ISC",
+  "author": "Little Linghuan <xiaolinghuan@eexx.me>",
+  "maintainers": [
+    {
+      "name": "Little Linghuan",
+      "email": "xiaolinghuan@eexx.me",
+      "url": "https://ieexx.com"
+    }, {
+      "name": "Esone",
+      "email": "01@eexx.me",
+      "url": "https://eexx.me"
+    }
+  ],
+  "license": "GPL",
   "bugs": {
     "url": "https://github.com/xxlh/StoryScroll/issues"
   },
   "homepage": "https://github.com/xxlh/StoryScroll#readme",
+  "keywords": [
+    "scroll",
+    "story",
+    "scroller",
+    "scrolling",
+    "PIXI",
+    "TweenMax",
+    "TimelineMax",
+    "GSAP",
+    "Canvas",
+    "3D",
+	"2D",
+	"xlh",
+	"Esone"
+  ],
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "@babel/preset-env": "^7.6.0",

@@ -11,7 +11,7 @@ const pkg = require('./package');
 const date = new Date();
 
 const banner = `/*
- * ${ pkg.name }.js v${ pkg.version }
+ * ${ pkg.name } v${ pkg.version }
  * (c) ${ date.getFullYear() } Little Linghuan & Esone
  * Released under the GPL license
  * ieexx.com
@@ -25,6 +25,7 @@ external.splice(external.indexOf('judgebrowser'), 1);
 
 console.info('Compiling... 😤');
 
+// pixi.js
 rollup({
   input: 'src/pixi.js',
   external: external,
@@ -39,9 +40,10 @@ rollup({
   });
 });
 
+// StoryScroll.js
 rollup({
   input: 'src/StoryScroll.js',
-  external: ['./pixi.js', 'gsap/TweenMax'],
+  external: ['./pixi.js', 'gsap/TweenMax', 'pixi.js'],
   plugins: [
     babel({
       exclude: 'node_modules/**' // ?????????
@@ -80,3 +82,18 @@ rollup({
     console.info(`~> gzip size: ${ pretty(int) }`);
   }).catch(console.error);
 }).catch(console.error);
+
+// story-projection.js
+rollup({
+  input: 'src/story-projection.js',
+  external: ['storyscroll', 'pixi.js', 'pixi-projection'],
+  plugins: [
+    commonjs()
+  ]
+}).then(bun => {
+  bun.write({
+    banner,
+    format: 'cjs',
+    file: 'lib/story-projection.js'
+  });
+});
