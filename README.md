@@ -16,7 +16,8 @@ Please mind that since they are not core dependencies, you will have to add fram
 
 Include the *core* library in your HTML file:
 ```html
-<script src="src//StoryScroll.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.1.3/pixi.min.js"></script>
+<script src="../lib/storyscroll.min.js"></script>
 ```
 
 ## Usage
@@ -25,17 +26,25 @@ Include the *core* library in your HTML file:
 import StoryScroll from 'storyscroll'
 
 // init controller
-window.story = new StoryScroll ({
-	crop: 'longside',	// false, none,longside,shortside
-	cropOrigin: 'top',	// center, top,bottom, left,right
-	orientation: 'landscape',
-	scrollDirection: 'x',
-	maxScroll: 20000,
-	backgroundColor: 0x000000
+const story = new StoryScroll ({
+	direction: 'x',
+	width: 750,
+	length: 20000,
+	bgcolor: 0x000000
 });
 
 // create a sprite
-let sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).act({x: 0,y:400}, 0.8);
+const sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).act({x: 0,y:400}, 0.8);
+```
+
+## Plugins
+
+```javascript
+import projection from 'storyscroll/projection'
+
+// create a 2D sprite
+const chapter2d = story.chapter2d({x:100, y:10});	
+const sprite2d = chapter2d.sprite2d(require('./images/sprite_2d.png'),{x:900, y: 30, affine:'AXIS_X', factor:1})
 ```
 
 ## Browser Support
