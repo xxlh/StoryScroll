@@ -27,15 +27,11 @@ class StoryScroll {
 	chapter(o, _parent) {
 		let chapter = new PIXI.Container();
 		this._setProps(chapter, o);
-		chapter.sprite = (imgsrc, o) => this.sprite(imgsrc, o, chapter);
-		chapter.spriteAnimated = (imgsrcs, o, autoPlay) => this.spriteAnimated(imgsrcs, o, autoPlay, chapter);
-		chapter.graphic = (o) => this.graphic(o, chapter);
-		chapter.text = (textCont, o, style_o) => this.text(textCont, o, style_o, chapter);
-		chapter.chapter = (o) => this.chapter(o, chapter);
+		this._setChapterChildren(chapter);
 		this._setActions(chapter);
 		if (_parent) _parent.addChild(chapter);
 		else this.containerScroll.addChild(chapter);
-		return chapter; 
+		return chapter;
 	}
 
 	sprite(imgsrc, o, _parent) {
@@ -480,6 +476,14 @@ class StoryScroll {
 		return sprite;
 	}
 
+	_setChapterChildren(chapter){
+		chapter.sprite = (imgsrc, o) => this.sprite(imgsrc, o, chapter);
+		chapter.spriteAnimated = (imgsrcs, o, autoPlay) => this.spriteAnimated(imgsrcs, o, autoPlay, chapter);
+		chapter.graphic = (o) => this.graphic(o, chapter);
+		chapter.text = (textCont, o, style_o) => this.text(textCont, o, style_o, chapter);
+		chapter.chapter = (o) => this.chapter(o, chapter);
+	}
+	
 	_createHash (hashLength) {
 		return Array.from(Array(Number(hashLength) || 24), () => Math.floor(Math.random() * 36).toString(36)).join('');
 	}

@@ -14,11 +14,16 @@ export default (() => {
         return chapter2d; 
 	}
 	
+	const originSetChapterChildrenFunc = StoryScroll.prototype._setChapterChildren;
+	StoryScroll.prototype._setChapterChildren = function(chapter){
+		originSetChapterChildrenFunc.call(this, chapter);
+		chapter.sprite2d = (imgsrc, o, _parent) => this.sprite2d(imgsrc, o, chapter);
+	}
+
 	StoryScroll.prototype.sprite2d = function(imgsrc, o, _parent) {
 		const sprite2d = new PIXI.projection.Sprite2d(PIXI.Texture.from(imgsrc));
-		sprite2d.proj.affine = PIXI.projection.AFFINE[typeof o.affine=='string'?o.affine.toUpperCase():'NONE'];
-		delete o.affine;
-		if (o.x && o.y) { sprite2d.position.set(o.x, o.y); delete o.x; delete o.y }
+		if (typeof o.affine=='string') { sprite2d.proj.affine = PIXI.projection.AFFINE[ o.affine.toUpperCase() ]; delete o.affine }
+		if (o.x || o.y) { sprite2d.position.set(o.x||0, o.y||0); delete o.x; delete o.y }
 		this._setProps(sprite2d, o);
         this._setActions(sprite2d);
 		if (_parent) _parent.addChild(sprite2d);
