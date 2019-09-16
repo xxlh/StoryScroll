@@ -97,3 +97,18 @@ rollup({
     file: 'lib/story-projection.js'
   });
 });
+
+// story-act.js
+rollup({
+	input: 'src/story-act.js',
+	external: ['storyscroll', 'gsap/TweenMax'],
+	plugins: [
+	  commonjs()
+	]
+  }).then(bun => {
+	bun.write({
+	  banner,
+	  format: 'cjs',
+	  file: 'lib/story-act.js'
+	});
+  });

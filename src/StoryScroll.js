@@ -33,6 +33,7 @@ class StoryScroll {
 		else this.containerScroll.addChild(chapter);
 		return chapter;
 	}
+	
 
 	sprite(imgsrc, o, _parent) {
 		let sprite = this._createSprite(imgsrc, o);
@@ -71,37 +72,6 @@ class StoryScroll {
 		return text;
 	};
 
-	act(obj, props, duration) {
-		let commonProps = this._getCommonProps(obj, props);
-		for (const prop in props) {
-			if (typeof props[prop] == 'object' && obj[prop]) {
-				TweenMax.to(obj[prop], duration, {...props[prop], ...commonProps});
-				delete props[prop];
-			}
-		}
-		TweenMax.to(obj, duration, props);
-	}
-
-	action(obj, props, duration, triggerPosition) {
-		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
-		if (!obj.actions) obj.actions = {};
-
-		let commonProps = this._getCommonProps(obj, props);
-		for (const prop in props) {
-			if (typeof props[prop] == 'object' && obj[prop]) {
-				let hash = this._createHash(8);
-				obj.actions[hash] = {action: {type:'point', propsRoot:prop, props:{...props[prop], ...commonProps}, duration, triggerPosition}};
-				this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
-				delete props[prop];
-			}
-		}
-
-		let hash = this._createHash(8);
-		obj.actions[hash] = {action: {type:'point', props, duration, triggerPosition}};
-		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
-		return obj;
-	}
-
 	actionByStep(obj, props, section, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
@@ -133,11 +103,9 @@ class StoryScroll {
 		this.storyPosition = this.scrollPosition / this._scale;
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
 
-		// Act
+		// Run Actions
 		this.actions.forEach(action => {
-			if (action.type == 'point') {
-				triggerActionByPosition.call(this, action);
-			} else if (action.type == 'section') {
+			if (action.type == 'section') {
 				triggerActionByStep.call(this, action);
 			} else if(action.type == 'pin') {
 				triggerActionSetPin.call(this, action);
@@ -154,28 +122,6 @@ class StoryScroll {
 		}
 
 
-		function triggerActionByPosition(action) {
-			let storedAction = action.sprite.actions[action.hash];
-			if (this.storyPosition >= action.triggerPosition) {
-				if (storedAction.status != 'acting' && storedAction.status != 'done') {
-					let tweenTarget = action.propsRoot ? action.sprite[action.propsRoot] : action.sprite;
-					let tweenVars = {...action.props};
-					tweenVars.onComplete = function(){storedAction.status = 'done'; action.props.onComplete&&action.props.onComplete.call(this)};
-					tweenVars.onReverseComplete = function(){storedAction.status = 'reversed'; action.props.onReverseComplete&&action.props.onReverseComplete.call(this)}
-					let tweenInstance = TweenMax.to(tweenTarget, action.duration, tweenVars);
-					storedAction.tween = tweenInstance;
-					storedAction.status = 'acting';
-				}
-			} else if(action.props.reverse !== false){
-				// 倒带
-				if (storedAction.status == 'acting' || storedAction.status == 'done') {
-					if (storedAction.tween) {
-						storedAction.status = 'reversing';
-						storedAction.tween.reverse();
-					}
-				}
-			}
-		}
 		function triggerActionByStep(action) {
 			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
@@ -458,11 +404,16 @@ class StoryScroll {
 	}
 
 	_setActions(obj) {
-		const Self = this;
-		obj.act = (props, duration) => Self.act(obj, props, duration);
-		obj.action = (props, duration, triggerPosition) => Self.action(obj, props, duration, triggerPosition);
-		obj.actionByStep = (props, section, triggerPosition) => Self.actionByStep(obj, props, section, triggerPosition);
-		obj.setPin = (triggerPosition, section) => Self.setPin(obj, triggerPosition, section);
+		obj.actionByStep = (props, section, triggerPosition) => this.actionByStep(obj, props, section, triggerPosition);
+		obj.setPin = (triggerPosition, section) => this.setPin(obj, triggerPosition, section);
+	}
+
+	_setChapterChildren(chapter){
+		chapter.sprite = (imgsrc, o) => this.sprite(imgsrc, o, chapter);
+		chapter.spriteAnimated = (imgsrcs, o, autoPlay) => this.spriteAnimated(imgsrcs, o, autoPlay, chapter);
+		chapter.graphic = (o) => this.graphic(o, chapter);
+		chapter.text = (textCont, o, style_o) => this.text(textCont, o, style_o, chapter);
+		chapter.chapter = (o) => this.chapter(o, chapter);
 	}
 
 	_setProps(sprite, props) {
@@ -476,14 +427,6 @@ class StoryScroll {
 		return sprite;
 	}
 
-	_setChapterChildren(chapter){
-		chapter.sprite = (imgsrc, o) => this.sprite(imgsrc, o, chapter);
-		chapter.spriteAnimated = (imgsrcs, o, autoPlay) => this.spriteAnimated(imgsrcs, o, autoPlay, chapter);
-		chapter.graphic = (o) => this.graphic(o, chapter);
-		chapter.text = (textCont, o, style_o) => this.text(textCont, o, style_o, chapter);
-		chapter.chapter = (o) => this.chapter(o, chapter);
-	}
-	
 	_createHash (hashLength) {
 		return Array.from(Array(Number(hashLength) || 24), () => Math.floor(Math.random() * 36).toString(36)).join('');
 	}
