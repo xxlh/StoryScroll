@@ -100,7 +100,7 @@ rollup({
 
 // story-act.js
 rollup({
-	input: 'src/story-act.js',
+	input: 'src/story-action.js',
 	external: ['storyscroll', 'gsap/TweenMax'],
 	plugins: [
 	  commonjs()
@@ -109,6 +109,6 @@ rollup({
 	bun.write({
 	  banner,
 	  format: 'cjs',
-	  file: 'lib/story-act.js'
+	  file: 'lib/story-action.js'
 	});
   });

@@ -1,14 +1,18 @@
 import StoryScroll from 'storyscroll';
 import {TweenMax} from "gsap/TweenMax";
-export default(() => {
-	const originSetActions = StoryScroll.prototype._setActions;
-	StoryScroll.prototype._setActions = function(obj) {
-		originSetActions.call(this, obj);
-		obj.act = (props, duration) => this.act(obj, props, duration);
-		obj.action = (props, duration, triggerPosition) => this.action(obj, props, duration, triggerPosition);
-	}
 
-	/* act */
+
+StoryScroll.prototype.pointActions = [];
+
+const originSetActions = StoryScroll.prototype._setActions;
+StoryScroll.prototype._setActions = function(obj) {
+	originSetActions.call(this, obj);
+	obj.act = (props, duration) => this.act(obj, props, duration);
+	obj.action = (props, duration, triggerPosition) => this.action(obj, props, duration, triggerPosition);
+}
+
+
+export let act = (() => {
 	StoryScroll.prototype.act = function(obj, props, duration) {
 		let commonProps = this._getCommonProps(obj, props);
 		for (const prop in props) {
@@ -20,7 +24,11 @@ export default(() => {
 		TweenMax.to(obj, duration, props);
 	}
 
-	/* action */
+	return StoryScroll.prototype.act;
+})()
+
+
+export let action = (() => {
 	StoryScroll.prototype.action = function(obj, props, duration, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
@@ -30,24 +38,24 @@ export default(() => {
 			if (typeof props[prop] == 'object' && obj[prop]) {
 				let hash = this._createHash(8);
 				obj.actions[hash] = {action: {type:'point', propsRoot:prop, props:{...props[prop], ...commonProps}, duration, triggerPosition}};
-				this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
+				this.pointActions.push({sprite:obj, hash, ...obj.actions[hash].action});
 				delete props[prop];
 			}
 		}
 
 		let hash = this._createHash(8);
 		obj.actions[hash] = {action: {type:'point', props, duration, triggerPosition}};
-		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
+		this.pointActions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
 	}
 
 	const originScrollerCallback = StoryScroll.prototype._scrollerCallback;
 	StoryScroll.prototype._scrollerCallback = function(left, top, zoom) {
 		originScrollerCallback.call(this, left, top, zoom);
-		this.actions.forEach(action => {
-			if(action.type == 'point')
+		this.pointActions.forEach(action => {
 			triggerActionByPosition.call(this, action);
 		});
+
 		function triggerActionByPosition(action) {
 			let storedAction = action.sprite.actions[action.hash];
 			if (this.storyPosition >= action.triggerPosition) {
@@ -71,4 +79,9 @@ export default(() => {
 			}
 		}
 	}
+
+	return StoryScroll.prototype.action;
 })()
+
+
+export default {act, action}

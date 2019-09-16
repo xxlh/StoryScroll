@@ -77,7 +77,7 @@ class StoryScroll {
 		if (!obj.actions) obj.actions = {};
 		let hash = this._createHash(8);
 		obj.actions[hash] = {action: {type:'section', props, section, triggerPosition}};
-		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
+		this.sectionActions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
 	}
 
@@ -85,7 +85,7 @@ class StoryScroll {
 		if (!obj.actions) obj.actions = {};
 		let hash = this._createHash();
 		obj.actions[hash] = {action:{type:'pin', section, triggerPosition}};
-		this.actions.push({sprite:obj, hash, ...obj.actions[hash].action});
+		this.pinActions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
 	}
 
@@ -104,12 +104,11 @@ class StoryScroll {
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
 
 		// Run Actions
-		this.actions.forEach(action => {
-			if (action.type == 'section') {
-				triggerActionByStep.call(this, action);
-			} else if(action.type == 'pin') {
-				triggerActionSetPin.call(this, action);
-			}
+		this.sectionActions.forEach(action => {
+			triggerActionByStep.call(this, action);
+		});
+		this.pinActions.forEach(action => {
+			triggerActionSetPin.call(this, action);
 		});
 
 		if (this.debug) {
@@ -191,7 +190,8 @@ class StoryScroll {
 		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
 		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
 		this.designOrientation = this.scrollDirection == 'y' ? 'portrait' : 'landscape'
-		this.actions = [];
+		this.pinActions = [];
+		this.sectionActions = [];
 		this.loaderList = [];
 		
 		this.scroller = new Scroller((left, top, zoom) => this._scrollerCallback(left, top, zoom), {
