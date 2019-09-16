@@ -98,7 +98,7 @@ rollup({
   });
 });
 
-// story-act.js
+// story-action.js
 rollup({
 	input: 'src/story-action.js',
 	external: ['storyscroll', 'gsap/TweenMax'],

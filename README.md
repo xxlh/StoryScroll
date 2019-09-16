@@ -39,8 +39,25 @@ const sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).act({
 
 ## Plugins
 
+### Action Plugin
+
+Support to do .action() with TweenMax animation.
+
 ```javascript
-import projection from 'storyscroll/projection'
+import {act, action} from 'storyscroll/action';
+
+// Add a action to trigger by scroll to some position
+sprite.action({x:100, reverse:false, onComplete:function(){
+	sprite.act({alpha:0}, .3);	// act animation immediately
+}}, 3, 100);
+```
+
+### Projection Plugin
+
+Support to do .sprite2d() with PIXI.projection.
+
+```javascript
+import {sprite2d, chapter2d} from 'storyscroll/projection'
 
 // create a 2D sprite
 const chapter2d = story.chapter2d({x:100, y:10});	
