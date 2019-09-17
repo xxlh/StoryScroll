@@ -33,7 +33,6 @@ class StoryScroll {
 		else this.containerScroll.addChild(chapter);
 		return chapter;
 	}
-	
 
 	sprite(imgsrc, o, _parent) {
 		let sprite = this._createSprite(imgsrc, o);
@@ -83,7 +82,7 @@ class StoryScroll {
 
 	setPin(obj, triggerPosition, section) {
 		if (!obj.actions) obj.actions = {};
-		let hash = this._createHash();
+		let hash = this._createHash(8);
 		obj.actions[hash] = {action:{type:'pin', section, triggerPosition}};
 		this.pinActions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
@@ -228,6 +227,7 @@ class StoryScroll {
 
 	_createContainer(o) {
 		this.app = new PIXI.Application( {width: this._clientWidth, height: this._clientHeight, backgroundColor : this.backgroundColor, antialias: true});
+		this.loader = this.app.loader;
 		
 		if(this.containerSelector === undefined){
 			const main = document.body.appendChild(document.createElement('main'));
@@ -372,6 +372,7 @@ class StoryScroll {
 	}
 	
 	_createSprite(imgsrc, opt){
+		// this.loader.add(this._createHash(8), imgsrc);
         var newSprite = new PIXI.Sprite.from(imgsrc);
         this._setProps(newSprite, opt);
 		// this.loaderList.push(imgsrc);
