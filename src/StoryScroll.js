@@ -233,6 +233,7 @@ class StoryScroll {
 		}
 		this.app = new PIXI.Application( {width: this._clientWidth * devicePixelRatio, height: this._clientHeight * devicePixelRatio, backgroundColor : this.backgroundColor, antialias: true, resolution: 1, roundPixels: true});
 		this.loader = this.app.loader;
+		this.load = this.app.loader.load;
 		this.loader.on("complete", loader => this.useLoader = false);
 		
 		if(this.containerSelector === undefined){

@@ -39,6 +39,29 @@ const sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).act({
 
 ## Plugins
 
+### Loader
+
+Support to setup a progressor with PIXI.Loader.
+
+```javascript
+// init controller
+const story = new StoryScroll ({
+	loader: true
+});
+
+// create a sprite
+const sprite1 = story.sprite(require('./images/sprite.png'), {x:40, y:540}).act({x: 0,y:400}, 0.8);
+const sprite2 = story.sprite(require('./images/sprite.png'), {x:80, y:540}).act({x: 9,y:400}, 0.8);
+
+// start loading for all sprites ABOVE
+story.loader.on("progress", (loader, resource) => {
+	console.log("Progress: " + (loader.progress|0) + "%");
+})
+.load((loader, resource) => {
+	console.log("All files loaded");
+});
+```
+
 ### Action Plugin
 
 Support to do .action() with TweenMax animation.
