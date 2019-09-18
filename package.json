@@ -1,6 +1,6 @@
 {
   "name": "storyscroll",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "The javascript library for story scroll interactions with html5 canvas",
   "main": "lib/storyscroll.cjs.js",
   "module": "lib/storyscroll.es.js",

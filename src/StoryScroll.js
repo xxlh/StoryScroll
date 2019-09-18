@@ -1,7 +1,6 @@
 // import * as PIXI from './pixi.js';
 import * as PIXI from 'pixi.js';
 import * as browser from "./browser";
-import {TweenMax} from "gsap/TweenMax";
 import Scroller from './Scroller';
 
 
@@ -35,7 +34,8 @@ class StoryScroll {
 	}
 
 	sprite(imgsrc, o, _parent) {
-		let sprite = this._createSprite(imgsrc, o);
+		let sprite = this._createSprite(imgsrc);
+        this._setProps(sprite, o);
 		this._setActions(sprite);
 		if (_parent) _parent.addChild(sprite);
 		else this.containerScroll.addChild(sprite);
@@ -43,7 +43,8 @@ class StoryScroll {
 	};
 
 	spriteAnimated(imgsrcs, o, autoPlay, _parent) {
-		let sprite = this._createAnimatedSprite(imgsrcs, o, autoPlay);
+		let sprite = this._createAnimatedSprite(imgsrcs, autoPlay);
+		this._setProps(sprite, o);
 		this._setActions(sprite);
 		if (_parent) _parent.addChild(sprite);
 		else this.containerScroll.addChild(sprite);
@@ -60,10 +61,10 @@ class StoryScroll {
 		return graphic;
 	}
 
-	text(textCont, o, style_o,_parent) {
+	text(textCont, o, style_o, _parent) {
 		let style = new PIXI.TextStyle();
 		this._setProps(style, style_o);
-		let text = new PIXI.Text(textCont,style);
+		let text = new PIXI.Text(textCont, style);
 		this._setProps(text, o);
 		this._setActions(text);
 		if (_parent) _parent.addChild(text);
@@ -180,9 +181,10 @@ class StoryScroll {
 		this.scrollDirection = o.direction || 'y';
 		this.designWidth = o.width || 750;
 		this.designLength = o.length || 10000;
-		this.debug = o.debug || false;
 		this.containerSelector = o.container;
 		this.backgroundColor = o.bgcolor;
+		this.useLoader = o.loader || false;
+		this.debug = o.debug || false;
 
 		// init
 		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
@@ -225,8 +227,14 @@ class StoryScroll {
 	};
 
 	_createContainer(o) {
-		this.app = new PIXI.Application( {width: this._clientWidth, height: this._clientHeight, backgroundColor : this.backgroundColor, antialias: true});
+		let devicePixelRatio = 1;
+		if (window.devicePixelRatio) {
+		devicePixelRatio = window.devicePixelRatio;
+		}
+		this.app = new PIXI.Application( {width: this._clientWidth * devicePixelRatio, height: this._clientHeight * devicePixelRatio, backgroundColor : this.backgroundColor, antialias: true, resolution: 1, roundPixels: true});
 		this.loader = this.app.loader;
+		this.load = this.app.loader.load;
+		this.loader.on("complete", loader => this.useLoader = false);
 		
 		if(this.containerSelector === undefined){
 			const main = document.body.appendChild(document.createElement('main'));
@@ -370,37 +378,54 @@ class StoryScroll {
 		return getPositionFromMap(this.designOrientation, this.deviceOrientation, this.scrollDirection);
 	}
 	
-	_createSprite(imgsrc, opt){
-		// this.loader.add(this._createHash(8), imgsrc);
-        var newSprite = new PIXI.Sprite.from(imgsrc);
-        this._setProps(newSprite, opt);
+	_createSprite(imgsrc){
+		var spriteInstance = new PIXI.Sprite.from(PIXI.Texture.EMPTY);
+		const loader = new PIXI.Loader();
+		if (!this.useLoader) {
+			spriteInstance.texture = PIXI.Texture.from(imgsrc);
+		} else if (this.loader.resources[imgsrc]) {
+			this.loader.on("complete", (loader, resources) => spriteInstance.texture = resources[imgsrc].texture);
+		} else {
+			this.loader.add(imgsrc, resource => spriteInstance.texture = resource.texture);
+		}
 		// this.loaderList.push(imgsrc);
-        return newSprite;
+        return spriteInstance;
 	}
 	
-	_createAnimatedSprite(imgsrcs, o, autoPlay) {
+	_createAnimatedSprite(imgsrcs, autoPlay) {
 		let textures = [];
-		let AnimatedSpriteInstance = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
+		let animatedSpriteInstance = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
 		if (typeof imgsrcs == 'object' && imgsrcs.length > 0) {
-			imgsrcs.forEach(imgsrc => {
-				textures.push(PIXI.Texture.from(imgsrc));
-			});
-			AnimatedSpriteInstance.textures = textures;
+			if(!this.useLoader){
+				imgsrcs.forEach(imgsrc => {
+					textures.push(PIXI.Texture.from(imgsrc));
+				});
+				animatedSpriteInstance.textures = textures;
+			}else{
+				imgsrcs.forEach(imgsrc => {
+					if (!this.loader.resources[imgsrc]) this.loader.add(imgsrc);
+				});
+
+				this.loader.on("complete", loader => {
+					imgsrcs.forEach(imgsrc => {
+						textures.push(loader.resources[imgsrc].texture);
+					});
+					animatedSpriteInstance.textures = textures;
+					if (autoPlay !== false) animatedSpriteInstance.play();
+				});
+			}
 		} else {
-			this.app.loader
-			.add('spritesheet', imgsrcs)
-			.load((loader, resources) => {
-				for (const imgkey in resources.spritesheet.data.frames) {
+			this.app.loader.add(imgsrcs, resource => {
+				for (const imgkey in resource.data.frames) {
 					const texture = PIXI.Texture.from(imgkey);
-					const time = resources.spritesheet.data.frames[imgkey].duration;
+					const time = resource.data.frames[imgkey].duration;
 					textures.push(time? {texture, time} : texture);
 				}
-				AnimatedSpriteInstance.textures = textures;
-				if (autoPlay !== false) AnimatedSpriteInstance.play();
+				animatedSpriteInstance.textures = textures;
+				if (autoPlay !== false) animatedSpriteInstance.play();
 			});
 		}
-		this._setProps(AnimatedSpriteInstance, o);
-		return AnimatedSpriteInstance;
+		return animatedSpriteInstance;
 	}
 
 	_setActions(obj) {
