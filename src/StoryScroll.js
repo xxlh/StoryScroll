@@ -371,7 +371,7 @@ class StoryScroll {
 	}
 	
 	_createSprite(imgsrc, opt){
-		// this.loader.add(this._createHash(8), imgsrc);
+		this.loader.add(this._createHash(8), imgsrc);
         var newSprite = new PIXI.Sprite.from(imgsrc);
         this._setProps(newSprite, opt);
 		// this.loaderList.push(imgsrc);
