@@ -34,7 +34,7 @@ const story = new StoryScroll ({
 });
 
 // create a sprite
-const sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).act({x: 0,y:400}, 0.8);
+const sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).action({x: 0,y:400}, 0.8);
 ```
 
 ## Plugins
@@ -50,8 +50,8 @@ const story = new StoryScroll ({
 });
 
 // create a sprite
-const sprite1 = story.sprite(require('./images/sprite.png'), {x:40, y:540}).act({x: 0,y:400}, 0.8);
-const sprite2 = story.sprite(require('./images/sprite.png'), {x:80, y:540}).act({x: 9,y:400}, 0.8);
+const sprite1 = story.sprite(require('./images/sprite.png'), {x:40, y:540});
+const sprite2 = story.sprite(require('./images/sprite.png'), {x:80, y:540});
 
 // start loading for all sprites ABOVE
 story.loader.on("progress", (loader, resource) => {
