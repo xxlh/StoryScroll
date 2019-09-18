@@ -225,7 +225,11 @@ class StoryScroll {
 	};
 
 	_createContainer(o) {
-		this.app = new PIXI.Application( {width: this._clientWidth, height: this._clientHeight, backgroundColor : this.backgroundColor, antialias: true});
+		let devicePixelRatio = 1;
+		if (window.devicePixelRatio) {
+		devicePixelRatio = window.devicePixelRatio;
+		}
+		this.app = new PIXI.Application( {width: this._clientWidth * devicePixelRatio, height: this._clientHeight * devicePixelRatio, backgroundColor : this.backgroundColor, antialias: true, resolution: 1, roundPixels: true});
 		this.loader = this.app.loader;
 		
 		if(this.containerSelector === undefined){
@@ -371,7 +375,7 @@ class StoryScroll {
 	}
 	
 	_createSprite(imgsrc, opt){
-		this.loader.add(this._createHash(8), imgsrc);
+		// this.loader.add(this._createHash(8), imgsrc);
         var newSprite = new PIXI.Sprite.from(imgsrc);
         this._setProps(newSprite, opt);
 		// this.loaderList.push(imgsrc);
