@@ -20,8 +20,8 @@ class StoryScroll {
 	constructor(o) {
 		this._defaultSetting(o||{});
 		this._createContainer(o);
-		window.onresize = () => this._windowResize();
 		this._windowResize();
+		
 	}
 
 	chapter(o, _parent) {
@@ -116,7 +116,6 @@ class StoryScroll {
 				console.log('left:', left)
 				console.log('scrollPosition :', this.scrollPosition );
 			}
-			console.log('storyPosition :', this.storyPosition );
 		}
 
 
@@ -244,7 +243,7 @@ class StoryScroll {
 		this.app.stage.addChild(this.containerFitWindow);
 	}
 	
-	_windowResize() {
+	 _windowResize = () => {
 		this.deviceOrientation = this._getDeviceOrientation();
 		this.deviceWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth		: this._clientHeight;
 		this.deviceHeight = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
