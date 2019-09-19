@@ -37,6 +37,16 @@ const story = new StoryScroll ({
 const sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).action({x: 0,y:400}, 0.8);
 ```
 
+### Parameters
+- `direction`: `x|y` scroll direction, default: y
+- `width`: `(number)` design width, default: 750
+- `length`: `(number)` design length, default: 10000
+- `bgcolor`: `0xFFFFFF` background color, default is tranparent
+- `container`: `#id` DOM selector, default: body
+- `loader`: `(boolean)` enable loader, default: false
+- `antialias`: `(boolean)` HD quality with more GPU, default: false
+- `debug`: `(boolean)` output scroll position in console, default: false
+
 ## Plugins
 
 ### Loader
