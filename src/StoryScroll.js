@@ -125,6 +125,35 @@ class StoryScroll {
 		}
 		goonStage.call(this);
 
+		function recallStage(){
+			if (this.prevPool.length == 0) return;
+			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] > this.storyPosition + 0.2*this.viewLength) {
+				this.containerScroll.addChild(this.prevPool[this.prevPool.length-1]);
+				this.stagePool.unshift(this.prevPool.pop());
+				recallStage.call(this);
+			}
+		}
+		recallStage.call(this);
+
+		function leaveStage(){
+			if (this.stagePool.length == 0) return;
+			if (this.stagePool[0][this.scrollDirection] < this.storyPosition + 0.2*this.viewLength) {
+				this.containerScroll.removeChild(this.stagePool[0]);
+				this.prevPool.push(this.stagePool.shift());
+				leaveStage.call(this);
+			}
+		}
+		leaveStage.call(this);
+
+		function getoutStage(){
+			if (this.stagePool.length == 0) return;
+			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition + 0.5*this.viewLength) {
+				this.containerScroll.removeChild(this.stagePool[this.stagePool.length-1]);
+				this.nextPool.unshift(this.stagePool.pop());
+				getoutStage.call(this);
+			}
+		}
+		getoutStage.call(this);
 
 		// Run Actions
 		this.sectionActions.forEach(action => {
