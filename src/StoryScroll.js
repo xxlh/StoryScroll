@@ -15,6 +15,9 @@ class StoryScroll {
 	deviceHeight;	// Phsical device height
 	maxScroll = 10000;
 	storyPosition = 0;
+	prevPool = [];
+	stagePool = [];
+	nextPool = [];
 
 	constructor(o) {
 		this._defaultSetting(o||{});
@@ -37,10 +40,18 @@ class StoryScroll {
 		let sprite = this._createSprite(imgsrc);
         this._setProps(sprite, o);
 		this._setActions(sprite);
-		if (_parent) _parent.addChild(sprite);
-		else this.containerScroll.addChild(sprite);
+		this._ship(sprite, _parent);
 		return sprite;
 	};
+	_ship(obj, _parent) {
+		if (_parent) {
+			_parent.addChild(obj);
+		} else if (!this.progressive) {
+			this.containerScroll.addChild(obj);
+		} else {
+			this.nextPool.push(obj);
+		}
+	}
 
 	spriteAnimated(imgsrcs, o, autoPlay, _parent) {
 		let sprite = this._createAnimatedSprite(imgsrcs, autoPlay);
@@ -102,6 +113,18 @@ class StoryScroll {
 		this.scrollPosition = this._getSrollPosition(left, top);
 		this.storyPosition = this.scrollPosition / this._scale;
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
+		
+		// Get Stage
+		function goonStage(){
+			if (this.nextPool.length == 0) return;
+			if (this.nextPool[0][this.scrollDirection] < this.storyPosition + 0.5*this.viewLength) {
+				this.containerScroll.addChild(this.nextPool[0]);
+				this.stagePool.push(this.nextPool.shift());
+				goonStage.call(this);
+			}
+		}
+		goonStage.call(this);
+
 
 		// Run Actions
 		this.sectionActions.forEach(action => {
@@ -117,6 +140,7 @@ class StoryScroll {
 				console.log('left:', left)
 				console.log('scrollPosition :', this.scrollPosition );
 			}
+			else console.log('scrollPosition :', this.scrollPosition );
 		}
 
 
@@ -184,6 +208,7 @@ class StoryScroll {
 		this.containerSelector = o.container;
 		this.backgroundColor = o.bgcolor;
 		this.useLoader = o.loader || false;
+		this.progressive = o.progressive || false;
 		this.antialias = o.antialias || false;
 		this.debug = o.debug || false;
 
