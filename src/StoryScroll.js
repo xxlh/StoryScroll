@@ -20,7 +20,7 @@ class StoryScroll {
 		this._defaultSetting(o||{});
 		this._createContainer(o);
 		this._windowResize();
-		
+		window.addEventListener('resize', this._windowResize.bind(this), false);
 	}
 
 	chapter(o, _parent) {
@@ -184,11 +184,12 @@ class StoryScroll {
 		this.containerSelector = o.container;
 		this.backgroundColor = o.bgcolor;
 		this.useLoader = o.loader || false;
+		this.antialias = o.antialias || false;
 		this.debug = o.debug || false;
 
 		// init
-		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
-		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
+		this._clientWidth = window.innerWidth || document.documentElement.clientWidth;
+		this._clientHeight = window.innerHeight || document.documentElement.clientHeight;
 		this.designOrientation = this.scrollDirection == 'y' ? 'portrait' : 'landscape'
 		this.pinActions = [];
 		this.sectionActions = [];
@@ -227,11 +228,7 @@ class StoryScroll {
 	};
 
 	_createContainer(o) {
-		let devicePixelRatio = 1;
-		if (window.devicePixelRatio) {
-		devicePixelRatio = window.devicePixelRatio;
-		}
-		this.app = new PIXI.Application( {width: this._clientWidth * devicePixelRatio, height: this._clientHeight * devicePixelRatio, backgroundColor : this.backgroundColor, antialias: true, resolution: 1, roundPixels: true});
+		this.app = new PIXI.Application( {backgroundColor : this.backgroundColor, antialias: this.antialias, resolution: 1});
 		this.loader = this.app.loader;
 		this.load = this.app.loader.load;
 		this.loader.on("complete", loader => this.useLoader = false);
@@ -249,9 +246,10 @@ class StoryScroll {
 		this.containerScroll.name = 'story';
 		this.containerFitWindow.addChild(this.containerScroll);
 		this.app.stage.addChild(this.containerFitWindow);
+		this.app.view.style.transformOrigin = "0 0";
 	}
 	
-	 _windowResize = () => {
+	 _windowResize() {
 		this.deviceOrientation = this._getDeviceOrientation();
 		this.deviceWidth = this.deviceOrientation == 'portrait' ?	this._clientWidth		: this._clientHeight;
 		this.deviceHeight = this.deviceOrientation == 'portrait' ?	this._clientHeight	: this._clientWidth;
@@ -266,9 +264,15 @@ class StoryScroll {
 		this.viewWidth = this.designWidth;
 		this.viewLength = this.deviceHeight / this._scale;
 
-		this._setContainerRotation(this.containerFitWindow, this.designOrientation, this.deviceOrientation, this.deviceWidth);
-		this.containerFitWindow.scale.set(this._scale, this._scale);
-		this.app.renderer.resize(this._clientWidth, this._clientHeight);
+		if (this.antialias) {
+			this._setContainerRotation(this.containerFitWindow, this.designOrientation, this.deviceOrientation, this.deviceWidth/this._scale);
+			this.app.view.style.transform = "scale("+this._scale+")";
+			this.app.renderer.resize(this._clientWidth/this._scale, this._clientHeight/this._scale);
+		} else {
+			this._setContainerRotation(this.containerFitWindow, this.designOrientation, this.deviceOrientation, this.deviceWidth);
+			this.containerFitWindow.scale.set(this._scale, this._scale);
+			this.app.renderer.resize(this._clientWidth, this._clientHeight);
+		}
 
 		let scrollerContentWidth = this.deviceOrientation == 'portrait' ?	this.deviceWidth	: this.contentLength;
 		let scrollerContentHeight = this.deviceOrientation == 'portrait' ?	this.contentLength	: this.deviceWidth;
@@ -282,10 +286,9 @@ class StoryScroll {
 	}
 
 	_getDeviceOrientation() {
-		this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
-		this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
-
 		if (browser.weixin) {
+			this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
+			this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
 			// ToTest: 测试好像现在微信不需要特别判断了？
 			if (window.orientation === 180 || window.orientation === 0) {
 				return 'portrait';
@@ -293,6 +296,8 @@ class StoryScroll {
 				return 'landscape';
 			}
 		} else {
+			this._clientWidth = window.innerWidth || document.documentElement.clientWidth;
+			this._clientHeight = window.innerHeight || document.documentElement.clientHeight;
 			return this._clientWidth < this._clientHeight ? 'portrait' : 'landscape';
 		}
 	}
