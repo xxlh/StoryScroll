@@ -49,6 +49,8 @@ class StoryScroll {
 		} else if (!this.progressive) {
 			this.containerScroll.addChild(obj);
 		} else {
+			// Todo: zIndex
+			// Todo: order list
 			this.nextPool.push(obj);
 		}
 	}
@@ -115,47 +117,13 @@ class StoryScroll {
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
 		
 		// Get Stage
-		function goonStage(){
-			if (this.nextPool.length == 0) return;
-			if (this.nextPool[0][this.scrollDirection] < this.storyPosition + 0.5*this.viewLength) {
-				this.containerScroll.addChild(this.nextPool[0]);
-				this.stagePool.push(this.nextPool.shift());
-				goonStage.call(this);
-			}
-		}
 		goonStage.call(this);
-
-		function recallStage(){
-			if (this.prevPool.length == 0) return;
-			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] > this.storyPosition + 0.2*this.viewLength) {
-				this.containerScroll.addChild(this.prevPool[this.prevPool.length-1]);
-				this.stagePool.unshift(this.prevPool.pop());
-				recallStage.call(this);
-			}
-		}
 		recallStage.call(this);
-
-		function leaveStage(){
-			if (this.stagePool.length == 0) return;
-			if (this.stagePool[0][this.scrollDirection] < this.storyPosition + 0.2*this.viewLength) {
-				this.containerScroll.removeChild(this.stagePool[0]);
-				this.prevPool.push(this.stagePool.shift());
-				leaveStage.call(this);
-			}
-		}
 		leaveStage.call(this);
-
-		function getoutStage(){
-			if (this.stagePool.length == 0) return;
-			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition + 0.5*this.viewLength) {
-				this.containerScroll.removeChild(this.stagePool[this.stagePool.length-1]);
-				this.nextPool.unshift(this.stagePool.pop());
-				getoutStage.call(this);
-			}
-		}
 		getoutStage.call(this);
 
 		// Run Actions
+		// Todo: filter unstage sprites
 		this.sectionActions.forEach(action => {
 			triggerActionByStep.call(this, action);
 		});
@@ -172,6 +140,39 @@ class StoryScroll {
 			else console.log('scrollPosition :', this.scrollPosition );
 		}
 
+	
+		function goonStage(){
+			if (this.nextPool.length == 0) return;
+			if (this.nextPool[0][this.scrollDirection] < this.storyPosition + 0.5*this.viewLength) {
+				this.containerScroll.addChild(this.nextPool[0]);
+				this.stagePool.push(this.nextPool.shift());
+				goonStage.call(this);
+			}
+		}		
+		function recallStage(){
+			if (this.prevPool.length == 0) return;
+			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] > this.storyPosition + 0.2*this.viewLength) {
+				this.containerScroll.addChild(this.prevPool[this.prevPool.length-1]);
+				this.stagePool.unshift(this.prevPool.pop());
+				recallStage.call(this);
+			}
+		}
+		function leaveStage(){
+			if (this.stagePool.length == 0) return;
+			if (this.stagePool[0][this.scrollDirection] < this.storyPosition + 0.2*this.viewLength) {
+				this.containerScroll.removeChild(this.stagePool[0]);
+				this.prevPool.push(this.stagePool.shift());
+				leaveStage.call(this);
+			}
+		}
+		function getoutStage(){
+			if (this.stagePool.length == 0) return;
+			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition + 0.5*this.viewLength) {
+				this.containerScroll.removeChild(this.stagePool[this.stagePool.length-1]);
+				this.nextPool.unshift(this.stagePool.pop());
+				getoutStage.call(this);
+			}
+		}
 
 		function triggerActionByStep(action) {
 			let storedAction = action.sprite.actions[action.hash];
