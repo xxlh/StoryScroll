@@ -420,15 +420,19 @@ class StoryScroll {
 				});
 			}
 		} else {
-			this.app.loader.add(imgsrcs, resource => {
-				for (const imgkey in resource.data.frames) {
+			if(!this.loader.resources[imgsrcs]) this.app.loader.add(imgsrcs);
+			
+			this.loader.on("complete", loader => {
+				for (const imgkey in this.loader.resources[imgsrcs].data.frames) {
 					const texture = PIXI.Texture.from(imgkey);
-					const time = resource.data.frames[imgkey].duration;
+					const time = this.loader.resources[imgsrcs].data.frames[imgkey].duration;
 					textures.push(time? {texture, time} : texture);
 				}
 				animatedSpriteInstance.textures = textures;
 				if (autoPlay !== false) animatedSpriteInstance.play();
 			});
+			
+			
 		}
 		return animatedSpriteInstance;
 	}
