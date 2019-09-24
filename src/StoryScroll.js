@@ -295,7 +295,7 @@ class StoryScroll {
 	_createContainer(o) {
 		this.app = new PIXI.Application( {backgroundColor : this.backgroundColor, antialias: this.antialias, resolution: 1});
 		this.loader = this.app.loader;
-		this.load = this.app.loader.load;
+		this.load = () => this.app.loader.load.call(this.app.loader);
 		this.loader.on("complete", loader => this.useLoader = false);
 		
 		if(this.containerSelector === undefined){
@@ -464,9 +464,9 @@ class StoryScroll {
 	}
 	
 	_createAnimatedSprite(imgsrcs, autoPlay) {
-		let textures = [];
 		let animatedSpriteInstance = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
 		if (typeof imgsrcs == 'object' && imgsrcs.length > 0) {
+			let textures = [];
 			if(!this.useLoader){
 				imgsrcs.forEach(imgsrc => {
 					textures.push(PIXI.Texture.from(imgsrc));
@@ -486,17 +486,27 @@ class StoryScroll {
 				});
 			}
 		} else {
-			if(!this.loader.resources[imgsrcs]) this.app.loader.add(imgsrcs);
-			
-			this.loader.on("complete", loader => {
-				for (const imgkey in this.loader.resources[imgsrcs].data.frames) {
+			if (!this.useLoader) {
+				const loader = new PIXI.Loader();
+				loader.add(imgsrcs).load((loader, resources) => setAnimatedSpriteTextures(animatedSpriteInstance, resources[imgsrcs], autoPlay));
+			}else{
+				if(!this.loader.resources[imgsrcs]) {
+					this.app.loader.add(imgsrcs, resource => setAnimatedSpriteTextures(animatedSpriteInstance, resource, autoPlay));
+				} else {
+					this.loader.on("complete", (loader, resources) => setAnimatedSpriteTextures(animatedSpriteInstance, resources[imgsrcs], autoPlay));
+				}
+			}
+
+			function setAnimatedSpriteTextures(animatedSpriteInstance, resource, autoPlay) {
+				let textures = [];
+				for (const imgkey in resource.data.frames) {
 					const texture = PIXI.Texture.from(imgkey);
-					const time = this.loader.resources[imgsrcs].data.frames[imgkey].duration;
+					const time = resource.data.frames[imgkey].duration;
 					textures.push(time? {texture, time} : texture);
 				}
 				animatedSpriteInstance.textures = textures;
 				if (autoPlay !== false) animatedSpriteInstance.play();
-			});
+			}
 		}
 		return animatedSpriteInstance;
 	}
