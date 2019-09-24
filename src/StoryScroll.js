@@ -35,8 +35,6 @@ class StoryScroll {
 		this._setChapterChildren(chapter);
 		this._setActions(chapter);
 		this._ship(chapter, _parent);
-		// if (_parent) _parent.addChild(chapter);
-		// else this.containerScroll.addChild(chapter);
 		return chapter;
 	}
 
@@ -47,28 +45,12 @@ class StoryScroll {
 		this._ship(sprite, _parent);
 		return sprite;
 	};
-	_ship(obj, _parent) {
-		if (_parent) {
-			_parent.addChild(obj);
-		} else if (!this.progressive) {
-			this.containerScroll.addChild(obj);
-		} else {
-			this.nextPool.push(obj);
-			this.nextPool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
-		}
-	}
-	init(){
-		this.stagePool.forEach(obj => {
-			this.containerScroll.addChild(obj);
-		});
-	}
+	
 	spriteAnimated(imgsrcs, o, autoPlay, _parent) {
 		let sprite = this._createAnimatedSprite(imgsrcs, autoPlay);
 		this._setProps(sprite, o);
 		this._setActions(sprite);
 		this._ship(sprite, _parent);
-		// if (_parent) _parent.addChild(sprite);
-		// else this.containerScroll.addChild(sprite);
 		if (autoPlay !== false) sprite.play();
 		return sprite;
 	}
@@ -78,8 +60,6 @@ class StoryScroll {
         this._setProps(graphic, o);
 		this._setActions(graphic);
 		this._ship(graphic, _parent);
-		// if (_parent) _parent.addChild(graphic);
-		// else this.containerScroll.addChild(graphic);
 		return graphic;
 	}
 
@@ -90,8 +70,6 @@ class StoryScroll {
 		this._setProps(text, o);
 		this._setActions(text);
 		this._ship(text, _parent);
-		if (_parent) _parent.addChild(text);
-		else this.containerScroll.addChild(text);
 		return text;
 	};
 
@@ -511,19 +489,6 @@ class StoryScroll {
 		return animatedSpriteInstance;
 	}
 
-	_setActions(obj) {
-		obj.actionByStep = (props, section, triggerPosition) => this.actionByStep(obj, props, section, triggerPosition);
-		obj.setPin = (triggerPosition, section) => this.setPin(obj, triggerPosition, section);
-	}
-
-	_setChapterChildren(chapter){
-		chapter.sprite = (imgsrc, o) => this.sprite(imgsrc, o, chapter);
-		chapter.spriteAnimated = (imgsrcs, o, autoPlay) => this.spriteAnimated(imgsrcs, o, autoPlay, chapter);
-		chapter.graphic = (o) => this.graphic(o, chapter);
-		chapter.text = (textCont, o, style_o) => this.text(textCont, o, style_o, chapter);
-		chapter.chapter = (o) => this.chapter(o, chapter);
-	}
-
 	_setProps(obj, props) {
 		if (props) {
             for (const prop in props) {
@@ -534,6 +499,30 @@ class StoryScroll {
 		}
 		obj.zIndex = this.currentZIndex++;
 		return obj;
+	}
+
+	_setChapterChildren(chapter){
+		chapter.sprite = (imgsrc, o) => this.sprite(imgsrc, o, chapter);
+		chapter.spriteAnimated = (imgsrcs, o, autoPlay) => this.spriteAnimated(imgsrcs, o, autoPlay, chapter);
+		chapter.graphic = (o) => this.graphic(o, chapter);
+		chapter.text = (textCont, o, style_o) => this.text(textCont, o, style_o, chapter);
+		chapter.chapter = (o) => this.chapter(o, chapter);
+	}
+
+	_setActions(obj) {
+		obj.actionByStep = (props, section, triggerPosition) => this.actionByStep(obj, props, section, triggerPosition);
+		obj.setPin = (triggerPosition, section) => this.setPin(obj, triggerPosition, section);
+	}
+
+	_ship(obj, _parent) {
+		if (_parent) {
+			_parent.addChild(obj);
+		} else if (!this.progressive) {
+			this.containerScroll.addChild(obj);
+		} else {
+			this.nextPool.push(obj);
+			this.nextPool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
+		}
 	}
 
 	_createHash (hashLength) {
