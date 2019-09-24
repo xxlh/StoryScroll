@@ -2,6 +2,7 @@
 import * as PIXI from 'pixi.js';
 import * as browser from "./browser";
 import Scroller from './Scroller';
+import { objectTypeIndexer } from '@babel/types';
 
 
 class StoryScroll {
@@ -18,6 +19,7 @@ class StoryScroll {
 	prevPool = [];
 	stagePool = [];
 	nextPool = [];
+	currZIndex =1;
 
 	constructor(o) {
 		this._defaultSetting(o||{});
@@ -31,8 +33,9 @@ class StoryScroll {
 		this._setProps(chapter, o);
 		this._setChapterChildren(chapter);
 		this._setActions(chapter);
-		if (_parent) _parent.addChild(chapter);
-		else this.containerScroll.addChild(chapter);
+		this._ship(chapter, _parent);
+		// if (_parent) _parent.addChild(chapter);
+		// else this.containerScroll.addChild(chapter);
 		return chapter;
 	}
 
@@ -50,17 +53,32 @@ class StoryScroll {
 			this.containerScroll.addChild(obj);
 		} else {
 			// Todo: zIndex
+			obj.zIndex = this.currZIndex++;
 			// Todo: order list
+
 			this.nextPool.push(obj);
+			this.nextPool.sort(function(a, b){return a.x - b.x});
+			
+			// init stagePool
+			if(obj.x < 2*this.viewLength) {
+				this.stagePool.push(obj);
+				this.stagePool.sort(function(a, b){return a.zIndex - b.zIndex});
+			}
+			
 		}
 	}
-
+	init(){
+		this.stagePool.forEach(obj => {
+			// this.containerScroll.addChildAt(obj ,obj.zIndex);
+		});
+	}
 	spriteAnimated(imgsrcs, o, autoPlay, _parent) {
 		let sprite = this._createAnimatedSprite(imgsrcs, autoPlay);
 		this._setProps(sprite, o);
 		this._setActions(sprite);
-		if (_parent) _parent.addChild(sprite);
-		else this.containerScroll.addChild(sprite);
+		this._ship(sprite, _parent);
+		// if (_parent) _parent.addChild(sprite);
+		// else this.containerScroll.addChild(sprite);
 		if (autoPlay !== false) sprite.play();
 		return sprite;
 	}
@@ -69,8 +87,9 @@ class StoryScroll {
 		let graphic = new PIXI.Graphics();
         this._setProps(graphic, o);
 		this._setActions(graphic);
-		if (_parent) _parent.addChild(graphic);
-		else this.containerScroll.addChild(graphic);
+		this._ship(graphic, _parent);
+		// if (_parent) _parent.addChild(graphic);
+		// else this.containerScroll.addChild(graphic);
 		return graphic;
 	}
 
@@ -80,6 +99,7 @@ class StoryScroll {
 		let text = new PIXI.Text(textCont, style);
 		this._setProps(text, o);
 		this._setActions(text);
+		this._ship(text, _parent);
 		if (_parent) _parent.addChild(text);
 		else this.containerScroll.addChild(text);
 		return text;
@@ -117,10 +137,10 @@ class StoryScroll {
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
 		
 		// Get Stage
-		goonStage.call(this);
-		recallStage.call(this);
-		leaveStage.call(this);
-		getoutStage.call(this);
+		// goonStage.call(this);
+		// recallStage.call(this);
+		// leaveStage.call(this);
+		// getoutStage.call(this);
 
 		// Run Actions
 		// Todo: filter unstage sprites
@@ -144,22 +164,22 @@ class StoryScroll {
 		function goonStage(){
 			if (this.nextPool.length == 0) return;
 			if (this.nextPool[0][this.scrollDirection] < this.storyPosition + 0.5*this.viewLength) {
-				this.containerScroll.addChild(this.nextPool[0]);
+				this.containerScroll.addChildAt(this.nextPool[0],this.nextPool[0].zIndex);
 				this.stagePool.push(this.nextPool.shift());
 				goonStage.call(this);
 			}
 		}		
 		function recallStage(){
 			if (this.prevPool.length == 0) return;
-			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] > this.storyPosition + 0.2*this.viewLength) {
-				this.containerScroll.addChild(this.prevPool[this.prevPool.length-1]);
+			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] > this.storyPosition - 0.2*this.viewLength) {
+				this.containerScroll.addChildAt(this.prevPool[this.prevPool.length-1],this.prevPool[this.prevPool.length-1].zIndex);
 				this.stagePool.unshift(this.prevPool.pop());
 				recallStage.call(this);
 			}
 		}
 		function leaveStage(){
 			if (this.stagePool.length == 0) return;
-			if (this.stagePool[0][this.scrollDirection] < this.storyPosition + 0.2*this.viewLength) {
+			if (this.stagePool[0][this.scrollDirection] < this.storyPosition + 0.5*this.viewLength) {
 				this.containerScroll.removeChild(this.stagePool[0]);
 				this.prevPool.push(this.stagePool.shift());
 				leaveStage.call(this);
@@ -167,7 +187,7 @@ class StoryScroll {
 		}
 		function getoutStage(){
 			if (this.stagePool.length == 0) return;
-			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition + 0.5*this.viewLength) {
+			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition - 0.2*this.viewLength) {
 				this.containerScroll.removeChild(this.stagePool[this.stagePool.length-1]);
 				this.nextPool.unshift(this.stagePool.pop());
 				getoutStage.call(this);
@@ -475,10 +495,12 @@ class StoryScroll {
 				});
 			}
 		} else {
-			this.app.loader.add(imgsrcs, resource => {
-				for (const imgkey in resource.data.frames) {
+			if(!this.loader.resources[imgsrcs]) this.app.loader.add(imgsrcs);
+			
+			this.loader.on("complete", loader => {
+				for (const imgkey in this.loader.resources[imgsrcs].data.frames) {
 					const texture = PIXI.Texture.from(imgkey);
-					const time = resource.data.frames[imgkey].duration;
+					const time = this.loader.resources[imgsrcs].data.frames[imgkey].duration;
 					textures.push(time? {texture, time} : texture);
 				}
 				animatedSpriteInstance.textures = textures;
