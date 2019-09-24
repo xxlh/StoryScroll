@@ -19,7 +19,7 @@ class StoryScroll {
 	prevPool = [];
 	stagePool = [];
 	nextPool = [];
-	currZIndex =1;
+	currentZIndex =0;
 
 	constructor(o) {
 		this._defaultSetting(o||{});
@@ -53,7 +53,7 @@ class StoryScroll {
 			this.containerScroll.addChild(obj);
 		} else {
 			// Todo: zIndex
-			obj.zIndex = this.currZIndex++;
+			
 			// Todo: order list
 
 			this.nextPool.push(obj);
@@ -69,7 +69,7 @@ class StoryScroll {
 	}
 	init(){
 		this.stagePool.forEach(obj => {
-			// this.containerScroll.addChildAt(obj ,obj.zIndex);
+			this.containerScroll.addChild(obj);
 		});
 	}
 	spriteAnimated(imgsrcs, o, autoPlay, _parent) {
@@ -137,10 +137,10 @@ class StoryScroll {
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
 		
 		// Get Stage
-		// goonStage.call(this);
-		// recallStage.call(this);
-		// leaveStage.call(this);
-		// getoutStage.call(this);
+		goonStage.call(this);
+		recallStage.call(this);
+		leaveStage.call(this);
+		getoutStage.call(this);
 
 		// Run Actions
 		// Todo: filter unstage sprites
@@ -164,7 +164,7 @@ class StoryScroll {
 		function goonStage(){
 			if (this.nextPool.length == 0) return;
 			if (this.nextPool[0][this.scrollDirection] < this.storyPosition + 0.5*this.viewLength) {
-				this.containerScroll.addChildAt(this.nextPool[0],this.nextPool[0].zIndex);
+				this.containerScroll.addChild(this.nextPool[0]);
 				this.stagePool.push(this.nextPool.shift());
 				goonStage.call(this);
 			}
@@ -172,7 +172,7 @@ class StoryScroll {
 		function recallStage(){
 			if (this.prevPool.length == 0) return;
 			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] > this.storyPosition - 0.2*this.viewLength) {
-				this.containerScroll.addChildAt(this.prevPool[this.prevPool.length-1],this.prevPool[this.prevPool.length-1].zIndex);
+				this.containerScroll.addChild(this.prevPool[this.prevPool.length-1]);
 				this.stagePool.unshift(this.prevPool.pop());
 				recallStage.call(this);
 			}
@@ -319,6 +319,7 @@ class StoryScroll {
 		this.containerFitWindow.pivot.set(0, 0);
 		this.containerScroll = new PIXI.Container();
 		this.containerScroll.name = 'story';
+		// this.containerScroll.sortableChildren=true;
 		this.containerFitWindow.addChild(this.containerScroll);
 		this.app.stage.addChild(this.containerFitWindow);
 		this.app.view.style.transformOrigin = "0 0";
@@ -523,15 +524,16 @@ class StoryScroll {
 		chapter.chapter = (o) => this.chapter(o, chapter);
 	}
 
-	_setProps(sprite, props) {
+	_setProps(obj, props) {
 		if (props) {
             for (const prop in props) {
                 if (props.hasOwnProperty(prop)) {
-                    sprite[prop] = props[prop];
+                    obj[prop] = props[prop];
                 }
             }
 		}
-		return sprite;
+		obj.zIndex = this.currentZIndex++;
+		return obj;
 	}
 
 	_createHash (hashLength) {
