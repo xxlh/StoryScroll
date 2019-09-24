@@ -53,19 +53,8 @@ class StoryScroll {
 		} else if (!this.progressive) {
 			this.containerScroll.addChild(obj);
 		} else {
-			// Todo: zIndex
-			
-			// Todo: order list
-
 			this.nextPool.push(obj);
-			this.nextPool.sort(function(a, b){return a.x - b.x});
-			
-			// init stagePool
-			if(obj.x < 2*this.viewLength) {
-				this.stagePool.push(obj);
-				this.stagePool.sort(function(a, b){return a.zIndex - b.zIndex});
-			}
-			
+			this.nextPool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
 		}
 	}
 	init(){
