@@ -5,7 +5,7 @@ import Scroller from './Scroller';
 
 
 class StoryScroll {
-	STAGE_BOUNDARY = .6; 	// Stage Length = viewLength * STAGE_BOUNDARY
+	STAGE_BOUNDARY = 2; 	// Stage Length = viewLength * STAGE_BOUNDARY
 
 	designWidth;
 	designLength;
@@ -139,6 +139,7 @@ class StoryScroll {
 		}		
 		function leaveStage(){
 			if (this.stagePool.length == 0) return;
+			this.stagePool.sort((a, b) => a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ] - b[this.scrollDirection]+ b[ this.scrollDirection?'width':'height' ]);
 			if (this.stagePool[0][this.scrollDirection] + this.stagePool[0][ this.scrollDirection?'width':'height' ] < this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				this.containerScroll.removeChild(this.stagePool[0]);
 				this.prevPool.push(this.stagePool.shift());
@@ -149,12 +150,13 @@ class StoryScroll {
 			if (this.prevPool.length == 0) return;
 			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] + this.prevPool[this.prevPool.length-1][ this.scrollDirection?'width':'height' ] > this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				this.containerScroll.addChild(this.prevPool[this.prevPool.length-1]);
-				this.stagePool.unshift(this.prevPool.pop());
+				this.stagePool.unshift(this.prevPool.pop());				
 				recallStage.call(this);
 			}
 		}
 		function pulldownStage(){
 			if (this.stagePool.length == 0) return;
+			this.stagePool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
 			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition + this.viewLength + (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				this.containerScroll.removeChild(this.stagePool[this.stagePool.length-1]);
 				this.nextPool.unshift(this.stagePool.pop());
