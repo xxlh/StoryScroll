@@ -5,7 +5,7 @@ import Scroller from './Scroller';
 
 
 class StoryScroll {
-	STAGE_BOUNDARY = 2; 	// Stage Length = viewLength * STAGE_BOUNDARY
+	STAGE_BOUNDARY = 3; 	// Stage Length = viewLength * STAGE_BOUNDARY
 
 	designWidth;
 	designLength;
@@ -19,6 +19,7 @@ class StoryScroll {
 	storyPosition = 0;
 	prevPool = [];
 	stagePool = [];
+	stagePoolByLen =[];
 	nextPool = [];
 	currentZIndex = 0;
 
@@ -84,6 +85,8 @@ class StoryScroll {
 
 	setPin(obj, triggerPosition, section) {
 		if (!obj.actions) obj.actions = {};
+		if (!section) section = this.maxScroll + this.viewLength - obj[this.scrollDirection];
+		obj.pinSection = section;
 		let hash = this._createHash(8);
 		obj.actions[hash] = {action:{type:'pin', section, triggerPosition}};
 		this.pinActions.push({sprite:obj, hash, ...obj.actions[hash].action});
@@ -100,6 +103,7 @@ class StoryScroll {
 	}
 	
 	_scrollerCallback(left, top, zoom){
+		const Self = this;
 		this.scrollPosition = this._getSrollPosition(left, top);
 		this.storyPosition = this.scrollPosition / this._scale;
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
@@ -132,36 +136,80 @@ class StoryScroll {
 		function goonStage(){
 			if (this.nextPool.length == 0) return;
 			if (this.nextPool[0][this.scrollDirection] < this.storyPosition + this.viewLength + (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
-				this.containerScroll.addChild(this.nextPool[0]);
-				this.stagePool.push(this.nextPool.shift());
+				let comingObj = this.nextPool.shift();
+				this.containerScroll.addChild(comingObj);
+				this.stagePool.push(comingObj);
+				this.stagePoolByLen.push(comingObj);
+				if (this.stagePoolByLen.length > 1)
+				for (let i = this.stagePoolByLen.length-1; i > 0; i--) {
+					const currentX_Len = this.stagePoolByLen[i][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[i]);
+					const nextX_Len = this.stagePoolByLen[i-1][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[i-1]);
+					if (currentX_Len >= nextX_Len) break;
+					this.stagePoolByLen.splice(i-1, 2, this.stagePoolByLen[i], this.stagePoolByLen[i-1])
+				}	
 				goonStage.call(this);
 			}
 		}		
 		function leaveStage(){
 			if (this.stagePool.length == 0) return;
-			this.stagePool.sort((a, b) => a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ] - b[this.scrollDirection]+ b[ this.scrollDirection?'width':'height' ]);
-			if (this.stagePool[0][this.scrollDirection] + this.stagePool[0][ this.scrollDirection?'width':'height' ] < this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
-				this.containerScroll.removeChild(this.stagePool[0]);
-				this.prevPool.push(this.stagePool.shift());
+			// this.stagePool.sort((a, b) => a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ] - b[this.scrollDirection]+ b[ this.scrollDirection?'width':'height' ]);
+			// if (this.stagePool[0][this.scrollDirection] + this.stagePool[0][ this.scrollDirection?'width':'height' ] < this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
+			// 	this.containerScroll.removeChild(this.stagePool[0]);
+			// 	this.prevPool.push(this.stagePool.shift());
+			// 	leaveStage.call(this);
+			// }
+
+			if (this.stagePoolByLen[0][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[0]) < this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
+				const leavingObj = this.stagePoolByLen.shift();
+				this.containerScroll.removeChild(leavingObj);
+				this.prevPool.push(leavingObj);
+				this.stagePool.forEach((obj, i) => {
+					if (obj == leavingObj) {
+						this.stagePool.splice(i, 1);
+						return false;
+					}
+				});
 				leaveStage.call(this);
 			}
 		}
 		function recallStage(){
 			if (this.prevPool.length == 0) return;
-			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] + this.prevPool[this.prevPool.length-1][ this.scrollDirection?'width':'height' ] > this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
-				this.containerScroll.addChild(this.prevPool[this.prevPool.length-1]);
-				this.stagePool.unshift(this.prevPool.pop());				
+			// this.prevPool.sort((a, b) => a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ] - b[this.scrollDirection]+ b[ this.scrollDirection?'width':'height' ]);
+			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] + _getStageObjWidth(this.prevPool[this.prevPool.length-1]) > this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
+				let comingObj = this.prevPool.pop();
+				this.containerScroll.addChild(comingObj);
+				this.stagePool.unshift(comingObj);
+				this.stagePoolByLen.unshift(comingObj);
+				if (this.stagePoolByLen.length > 1)
+				for (let i = 0; i < this.stagePoolByLen.length-1; i++) {
+					const currentX_Len = this.stagePoolByLen[i][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[i]);
+					const nextX_Len = this.stagePoolByLen[i+1][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[i+1]);
+					if (currentX_Len >= nextX_Len) break;
+					this.stagePoolByLen.splice(i, 2, this.stagePoolByLen[i+1], this.stagePoolByLen[i])
+				}				
 				recallStage.call(this);
 			}
 		}
 		function pulldownStage(){
 			if (this.stagePool.length == 0) return;
-			this.stagePool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
+			// this.stagePool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
 			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition + this.viewLength + (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
-				this.containerScroll.removeChild(this.stagePool[this.stagePool.length-1]);
-				this.nextPool.unshift(this.stagePool.pop());
+				const leavingObj = this.stagePool.pop();
+				this.containerScroll.removeChild(leavingObj);
+				this.nextPool.unshift(leavingObj);
+				for (let i = this.stagePoolByLen.length-1; i >= 0; i--) {
+					if (this.stagePoolByLen[i] == leavingObj) {
+						this.stagePoolByLen.splice(i, 1);
+						break;
+					}
+				}
 				pulldownStage.call(this);
 			}
+		}
+		function _getStageObjWidth(obj) {
+			let leavingObjWidth = obj[ Self.scrollDirection?'width':'height' ];
+			if (obj.pinSection) leavingObjWidth += obj.pinSection;
+			return leavingObjWidth;
 		}
 
 		function triggerActionByStep(action) {
