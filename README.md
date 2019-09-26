@@ -45,6 +45,7 @@ const sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).actio
 - `container`: `#id` DOM selector, default: body
 - `loader`: `(boolean)` enable loader, default: false
 - `antialias`: `(boolean)` HD quality with more GPU, default: false
+- `progressive`: `(boolean)` incremental loading of sprite to stage, default: false
 - `debug`: `(boolean)` output scroll position in console, default: false
 
 ## Plugins

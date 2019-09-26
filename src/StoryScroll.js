@@ -389,6 +389,14 @@ class StoryScroll {
 			} else if (window.orientation === 90 || window.orientation === -90) {
 				return 'landscape';
 			}
+		} else if (browser.weibo) {
+			this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
+			this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
+			if (window.orientation === 180 || window.orientation === 0) {
+				return 'portrait';
+			} else if (window.orientation === 90 || window.orientation === -90) {
+				return 'landscape';
+			}
 		} else {
 			this._clientWidth = window.innerWidth || document.documentElement.clientWidth;
 			this._clientHeight = window.innerHeight || document.documentElement.clientHeight;
