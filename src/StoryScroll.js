@@ -5,7 +5,7 @@ import Scroller from './Scroller';
 
 
 class StoryScroll {
-	STAGE_BOUNDARY = 3; 	// Stage Length = viewLength * STAGE_BOUNDARY
+	STAGE_BOUNDARY = .6; 	// Stage Length = viewLength * STAGE_BOUNDARY
 
 	designWidth;
 	designLength;
@@ -19,7 +19,8 @@ class StoryScroll {
 	storyPosition = 0;
 	prevPool = [];
 	stagePool = [];
-	stagePoolByLen =[];
+	stagePoolByLen = [];
+	stageZIndexes = {};
 	nextPool = [];
 	currentZIndex = 0;
 
@@ -138,72 +139,59 @@ class StoryScroll {
 			if (this.nextPool[0][this.scrollDirection] < this.storyPosition + this.viewLength + (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				let comingObj = this.nextPool.shift();
 				this.containerScroll.addChild(comingObj);
+				this.stageZIndexes[comingObj.zIndex] = true;
 				this.stagePool.push(comingObj);
 				this.stagePoolByLen.push(comingObj);
-				if (this.stagePoolByLen.length > 1)
-				for (let i = this.stagePoolByLen.length-1; i > 0; i--) {
-					const currentX_Len = this.stagePoolByLen[i][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[i]);
-					const nextX_Len = this.stagePoolByLen[i-1][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[i-1]);
-					if (currentX_Len >= nextX_Len) break;
-					this.stagePoolByLen.splice(i-1, 2, this.stagePoolByLen[i], this.stagePoolByLen[i-1])
-				}	
+				this.stagePoolByLen.sort((a, b) => a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ] - b[this.scrollDirection]+ b[ this.scrollDirection?'width':'height' ]);
 				goonStage.call(this);
 			}
-		}		
+		}
 		function leaveStage(){
-			if (this.stagePool.length == 0) return;
-			// this.stagePool.sort((a, b) => a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ] - b[this.scrollDirection]+ b[ this.scrollDirection?'width':'height' ]);
-			// if (this.stagePool[0][this.scrollDirection] + this.stagePool[0][ this.scrollDirection?'width':'height' ] < this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
-			// 	this.containerScroll.removeChild(this.stagePool[0]);
-			// 	this.prevPool.push(this.stagePool.shift());
-			// 	leaveStage.call(this);
-			// }
-
+			_delFrontUnstaged(this.stagePoolByLen);
+			if (this.stagePoolByLen.length == 0) return;
 			if (this.stagePoolByLen[0][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[0]) < this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				const leavingObj = this.stagePoolByLen.shift();
 				this.containerScroll.removeChild(leavingObj);
+				delete this.stageZIndexes[leavingObj.zIndex];
 				this.prevPool.push(leavingObj);
-				this.stagePool.forEach((obj, i) => {
-					if (obj == leavingObj) {
-						this.stagePool.splice(i, 1);
-						return false;
-					}
-				});
 				leaveStage.call(this);
+			}
+
+			function _delFrontUnstaged(pool) {
+				if (pool.length == 0) return;
+				if (_isOnStage(pool[0])) return;
+				pool.shift();
+				_delFrontUnstaged(pool);
 			}
 		}
 		function recallStage(){
 			if (this.prevPool.length == 0) return;
-			// this.prevPool.sort((a, b) => a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ] - b[this.scrollDirection]+ b[ this.scrollDirection?'width':'height' ]);
 			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] + _getStageObjWidth(this.prevPool[this.prevPool.length-1]) > this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				let comingObj = this.prevPool.pop();
 				this.containerScroll.addChild(comingObj);
-				this.stagePool.unshift(comingObj);
+				this.stageZIndexes[comingObj.zIndex] = true;
 				this.stagePoolByLen.unshift(comingObj);
-				if (this.stagePoolByLen.length > 1)
-				for (let i = 0; i < this.stagePoolByLen.length-1; i++) {
-					const currentX_Len = this.stagePoolByLen[i][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[i]);
-					const nextX_Len = this.stagePoolByLen[i+1][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[i+1]);
-					if (currentX_Len >= nextX_Len) break;
-					this.stagePoolByLen.splice(i, 2, this.stagePoolByLen[i+1], this.stagePoolByLen[i])
-				}				
+				this.stagePool.unshift(comingObj);
+				this.stagePool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
 				recallStage.call(this);
 			}
 		}
 		function pulldownStage(){
+			_delBehindUnstaged(this.stagePool);
 			if (this.stagePool.length == 0) return;
-			// this.stagePool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
 			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition + this.viewLength + (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				const leavingObj = this.stagePool.pop();
 				this.containerScroll.removeChild(leavingObj);
+				delete this.stageZIndexes[leavingObj.zIndex];
 				this.nextPool.unshift(leavingObj);
-				for (let i = this.stagePoolByLen.length-1; i >= 0; i--) {
-					if (this.stagePoolByLen[i] == leavingObj) {
-						this.stagePoolByLen.splice(i, 1);
-						break;
-					}
-				}
 				pulldownStage.call(this);
+			}
+
+			function _delBehindUnstaged(pool) {
+				if (pool.length == 0) return;
+				if (_isOnStage(pool[pool.length-1])) return;
+				pool.shift();
+				_delBehindUnstaged(pool);
 			}
 		}
 		function _getStageObjWidth(obj) {
@@ -211,6 +199,10 @@ class StoryScroll {
 			if (obj.pinSection) leavingObjWidth += obj.pinSection;
 			return leavingObjWidth;
 		}
+		function _isOnStage(obj) {
+			if (Self.stageZIndexes[ obj.zIndex ]) return true;
+			return false;
+		}	
 
 		function triggerActionByStep(action) {
 			let storedAction = action.sprite.actions[action.hash];
@@ -375,6 +367,7 @@ class StoryScroll {
 
 		setTimeout(() => {
 			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
+			// Todo: enableX Y scroll
 			this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 		},200)
 	}
