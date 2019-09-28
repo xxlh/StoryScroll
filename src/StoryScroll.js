@@ -5,7 +5,7 @@ import Scroller from './Scroller';
 
 
 class StoryScroll {
-	STAGE_BOUNDARY = .6; 	// Stage Length = viewLength * STAGE_BOUNDARY
+	STAGE_BOUNDARY = 3; 	// Stage Length = viewLength * STAGE_BOUNDARY
 
 	designWidth;
 	designLength;
@@ -95,10 +95,13 @@ class StoryScroll {
 	}
 
 	stop(){
+		// Todo: bug when resize window
 		this.scroller.options.scrollingX = false;
 		this.scroller.options.scrollingY = false;
 	}
 	play(){
+		// Todo: support auto play
+		// Todo: support auto play by pressing screen
 		this.scroller.options.scrollingX = true;
 		this.scroller.options.scrollingY = true;
 	}
@@ -116,7 +119,6 @@ class StoryScroll {
 		pulldownStage.call(this);
 
 		// Run Actions
-		// Todo: filter unstage sprites
 		this.sectionActions.forEach(action => {
 			triggerActionByStep.call(this, action);
 		});
@@ -143,6 +145,7 @@ class StoryScroll {
 				this.stagePool.push(comingObj);
 				this.stagePoolByLen.push(comingObj);
 				this.stagePoolByLen.sort((a, b) => (a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ]) - (b[this.scrollDirection] + b[ this.scrollDirection?'width':'height' ]));
+				_recoverPausedRepeatAction(comingObj);
 				goonStage.call(this);
 			}
 		}
@@ -154,6 +157,7 @@ class StoryScroll {
 				this.containerScroll.removeChild(leavingObj);
 				delete this.stageZIndexes[leavingObj.zIndex];
 				this.prevPool.push(leavingObj);
+				_pauseRepeatAction(leavingObj);
 				leaveStage.call(this);
 			}
 
@@ -173,6 +177,7 @@ class StoryScroll {
 				this.stagePoolByLen.unshift(comingObj);
 				this.stagePool.unshift(comingObj);
 				this.stagePool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
+				_recoverPausedRepeatAction(comingObj);
 				recallStage.call(this);
 			}
 		}
@@ -184,6 +189,7 @@ class StoryScroll {
 				this.containerScroll.removeChild(leavingObj);
 				delete this.stageZIndexes[leavingObj.zIndex];
 				this.nextPool.unshift(leavingObj);
+				_pauseRepeatAction(leavingObj);
 				pulldownStage.call(this);
 			}
 
@@ -199,12 +205,26 @@ class StoryScroll {
 			if (obj.pinSection) leavingObjWidth += obj.pinSection;
 			return leavingObjWidth;
 		}
+		function _pauseRepeatAction(obj) {
+				if (obj.tweens) obj.tweens.forEach(tween => {
+					tween.pausedAtLeaving = tween.paused();
+					if (!tween.pausedAtLeaving) tween.pause();
+				});
+		}
+		function _recoverPausedRepeatAction(obj) {
+				if (obj.tweens) obj.tweens.forEach(tween => {
+					if (!tween.pausedAtLeaving) tween.play();
+				});
+		}
 		function _isOnStage(obj) {
 			if (Self.stageZIndexes[ obj.zIndex ]) return true;
 			return false;
-		}	
+		}
 
 		function triggerActionByStep(action) {
+			if (action.sprite._destroyed) return;
+			if (!_isOnStage(action.sprite)) return;
+
 			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
 				setProps('during', storedAction, action, this.storyPosition);
@@ -251,6 +271,9 @@ class StoryScroll {
 			}
 		}
 		function triggerActionSetPin(action) {
+			if (action.sprite._destroyed) return;
+			if (!_isOnStage(action.sprite)) return;
+
 			let storedAction = action.sprite.actions[action.hash];
 			storedAction.originProps = storedAction.originProps || {};
 			if (storedAction.originProps[this.scrollDirection] === undefined) 
@@ -429,14 +452,6 @@ class StoryScroll {
 			rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetX'],
 			rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetY']
 		);
-	}
-
-	_getCommonProps(obj, props) {
-		let commonProps = {};
-		for (const prop in props) {
-			if (!obj[prop] && typeof props[prop] != 'function') commonProps[prop] = props[prop];
-		}
-		return commonProps;
 	}
 
 	_getSpriteTriggerPosition(sprite) {
