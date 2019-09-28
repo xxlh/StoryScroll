@@ -5,6 +5,8 @@ import Scroller from './Scroller';
 
 
 class StoryScroll {
+	STAGE_BOUNDARY = 3; 	// Stage Length = viewLength * STAGE_BOUNDARY
+
 	designWidth;
 	designLength;
 	contentWidth;	// Scaled Design With
@@ -15,6 +17,12 @@ class StoryScroll {
 	deviceHeight;	// Phsical device height
 	maxScroll = 10000;
 	storyPosition = 0;
+	prevPool = [];
+	stagePool = [];
+	stagePoolByLen = [];
+	stageZIndexes = {};
+	nextPool = [];
+	currentZIndex = 0;
 
 	constructor(o) {
 		this._defaultSetting(o||{});
@@ -28,8 +36,7 @@ class StoryScroll {
 		this._setProps(chapter, o);
 		this._setChapterChildren(chapter);
 		this._setActions(chapter);
-		if (_parent) _parent.addChild(chapter);
-		else this.containerScroll.addChild(chapter);
+		this._ship(chapter, _parent);
 		return chapter;
 	}
 
@@ -37,17 +44,15 @@ class StoryScroll {
 		let sprite = this._createSprite(imgsrc);
         this._setProps(sprite, o);
 		this._setActions(sprite);
-		if (_parent) _parent.addChild(sprite);
-		else this.containerScroll.addChild(sprite);
+		this._ship(sprite, _parent);
 		return sprite;
 	};
-
+	
 	spriteAnimated(imgsrcs, o, autoPlay, _parent) {
 		let sprite = this._createAnimatedSprite(imgsrcs, autoPlay);
 		this._setProps(sprite, o);
 		this._setActions(sprite);
-		if (_parent) _parent.addChild(sprite);
-		else this.containerScroll.addChild(sprite);
+		this._ship(sprite, _parent);
 		if (autoPlay !== false) sprite.play();
 		return sprite;
 	}
@@ -56,8 +61,7 @@ class StoryScroll {
 		let graphic = new PIXI.Graphics();
         this._setProps(graphic, o);
 		this._setActions(graphic);
-		if (_parent) _parent.addChild(graphic);
-		else this.containerScroll.addChild(graphic);
+		this._ship(graphic, _parent);
 		return graphic;
 	}
 
@@ -67,8 +71,7 @@ class StoryScroll {
 		let text = new PIXI.Text(textCont, style);
 		this._setProps(text, o);
 		this._setActions(text);
-		if (_parent) _parent.addChild(text);
-		else this.containerScroll.addChild(text);
+		this._ship(text, _parent);
 		return text;
 	};
 
@@ -83,6 +86,8 @@ class StoryScroll {
 
 	setPin(obj, triggerPosition, section) {
 		if (!obj.actions) obj.actions = {};
+		if (!section) section = this.maxScroll + this.viewLength - obj[this.scrollDirection];
+		obj.pinSection = section;
 		let hash = this._createHash(8);
 		obj.actions[hash] = {action:{type:'pin', section, triggerPosition}};
 		this.pinActions.push({sprite:obj, hash, ...obj.actions[hash].action});
@@ -90,18 +95,28 @@ class StoryScroll {
 	}
 
 	stop(){
+		// Todo: bug when resize window
 		this.scroller.options.scrollingX = false;
 		this.scroller.options.scrollingY = false;
 	}
 	play(){
+		// Todo: support auto play
+		// Todo: support auto play by pressing screen
 		this.scroller.options.scrollingX = true;
 		this.scroller.options.scrollingY = true;
 	}
 	
 	_scrollerCallback(left, top, zoom){
+		const Self = this;
 		this.scrollPosition = this._getSrollPosition(left, top);
 		this.storyPosition = this.scrollPosition / this._scale;
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
+		
+		// Get Stage
+		goonStage.call(this);
+		leaveStage.call(this);
+		recallStage.call(this);
+		pulldownStage.call(this);
 
 		// Run Actions
 		this.sectionActions.forEach(action => {
@@ -117,10 +132,99 @@ class StoryScroll {
 				console.log('left:', left)
 				console.log('scrollPosition :', this.scrollPosition );
 			}
+			else console.log('scrollPosition :', this.scrollPosition );
 		}
 
+	
+		function goonStage(){
+			if (this.nextPool.length == 0) return;
+			if (this.nextPool[0][this.scrollDirection] < this.storyPosition + this.viewLength + (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
+				let comingObj = this.nextPool.shift();
+				this.containerScroll.addChild(comingObj);
+				this.stageZIndexes[comingObj.zIndex] = true;
+				this.stagePool.push(comingObj);
+				this.stagePoolByLen.push(comingObj);
+				this.stagePoolByLen.sort((a, b) => (a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ]) - (b[this.scrollDirection] + b[ this.scrollDirection?'width':'height' ]));
+				_recoverPausedRepeatAction(comingObj);
+				goonStage.call(this);
+			}
+		}
+		function leaveStage(){
+			_delFrontUnstaged(this.stagePoolByLen);
+			if (this.stagePoolByLen.length == 0) return;
+			if (this.stagePoolByLen[0][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[0]) < this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
+				const leavingObj = this.stagePoolByLen.shift();
+				this.containerScroll.removeChild(leavingObj);
+				delete this.stageZIndexes[leavingObj.zIndex];
+				this.prevPool.push(leavingObj);
+				_pauseRepeatAction(leavingObj);
+				leaveStage.call(this);
+			}
+
+			function _delFrontUnstaged(pool) {
+				if (pool.length == 0) return;
+				if (_isOnStage(pool[0])) return;
+				pool.shift();
+				_delFrontUnstaged(pool);
+			}
+		}
+		function recallStage(){
+			if (this.prevPool.length == 0) return;
+			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] + _getStageObjWidth(this.prevPool[this.prevPool.length-1]) > this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
+				let comingObj = this.prevPool.pop();
+				this.containerScroll.addChild(comingObj);
+				this.stageZIndexes[comingObj.zIndex] = true;
+				this.stagePoolByLen.unshift(comingObj);
+				this.stagePool.unshift(comingObj);
+				this.stagePool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
+				_recoverPausedRepeatAction(comingObj);
+				recallStage.call(this);
+			}
+		}
+		function pulldownStage(){
+			_delBehindUnstaged(this.stagePool);
+			if (this.stagePool.length == 0) return;
+			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition + this.viewLength + (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
+				const leavingObj = this.stagePool.pop();
+				this.containerScroll.removeChild(leavingObj);
+				delete this.stageZIndexes[leavingObj.zIndex];
+				this.nextPool.unshift(leavingObj);
+				_pauseRepeatAction(leavingObj);
+				pulldownStage.call(this);
+			}
+
+			function _delBehindUnstaged(pool) {
+				if (pool.length == 0) return;
+				if (_isOnStage(pool[pool.length-1])) return;
+				pool.shift();
+				_delBehindUnstaged(pool);
+			}
+		}
+		function _getStageObjWidth(obj) {
+			let leavingObjWidth = obj[ Self.scrollDirection?'width':'height' ];
+			if (obj.pinSection) leavingObjWidth += obj.pinSection;
+			return leavingObjWidth;
+		}
+		function _pauseRepeatAction(obj) {
+				if (obj.tweens) obj.tweens.forEach(tween => {
+					tween.pausedAtLeaving = tween.paused();
+					if (!tween.pausedAtLeaving) tween.pause();
+				});
+		}
+		function _recoverPausedRepeatAction(obj) {
+				if (obj.tweens) obj.tweens.forEach(tween => {
+					if (!tween.pausedAtLeaving) tween.play();
+				});
+		}
+		function _isOnStage(obj) {
+			if (Self.stageZIndexes[ obj.zIndex ]) return true;
+			return false;
+		}
 
 		function triggerActionByStep(action) {
+			if (action.sprite._destroyed) return;
+			if (!_isOnStage(action.sprite)) return;
+
 			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
 				setProps('during', storedAction, action, this.storyPosition);
@@ -167,6 +271,9 @@ class StoryScroll {
 			}
 		}
 		function triggerActionSetPin(action) {
+			if (action.sprite._destroyed) return;
+			if (!_isOnStage(action.sprite)) return;
+
 			let storedAction = action.sprite.actions[action.hash];
 			storedAction.originProps = storedAction.originProps || {};
 			if (storedAction.originProps[this.scrollDirection] === undefined) 
@@ -184,6 +291,7 @@ class StoryScroll {
 		this.containerSelector = o.container;
 		this.backgroundColor = o.bgcolor;
 		this.useLoader = o.loader || false;
+		this.progressive = o.progressive || false;
 		this.antialias = o.antialias || false;
 		this.debug = o.debug || false;
 
@@ -244,6 +352,7 @@ class StoryScroll {
 		this.containerFitWindow.pivot.set(0, 0);
 		this.containerScroll = new PIXI.Container();
 		this.containerScroll.name = 'story';
+		if (this.progressive) this.containerScroll.sortableChildren=true;
 		this.containerFitWindow.addChild(this.containerScroll);
 		this.app.stage.addChild(this.containerFitWindow);
 		this.app.view.style.transformOrigin = "0 0";
@@ -281,6 +390,7 @@ class StoryScroll {
 
 		setTimeout(() => {
 			this.scroller.setDimensions(this._clientWidth, this._clientHeight, scrollerContentWidth, scrollerContentHeight);
+			// Todo: enableX Y scroll
 			this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 		},200)
 	}
@@ -290,6 +400,14 @@ class StoryScroll {
 			this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
 			this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
 			// ToTest: 测试好像现在微信不需要特别判断了？
+			if (window.orientation === 180 || window.orientation === 0) {
+				return 'portrait';
+			} else if (window.orientation === 90 || window.orientation === -90) {
+				return 'landscape';
+			}
+		} else if (browser.weibo) {
+			this._clientWidth = document.documentElement.clientWidth || window.innerWidth;
+			this._clientHeight = document.documentElement.clientHeight || window.innerHeight;
 			if (window.orientation === 180 || window.orientation === 0) {
 				return 'portrait';
 			} else if (window.orientation === 90 || window.orientation === -90) {
@@ -334,14 +452,6 @@ class StoryScroll {
 			rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetX'],
 			rotationMap[ 'design_'+designOrientation ] [ 'device_'+deviceOrientation ] ['offsetY']
 		);
-	}
-
-	_getCommonProps(obj, props) {
-		let commonProps = {};
-		for (const prop in props) {
-			if (!obj[prop] && typeof props[prop] != 'function') commonProps[prop] = props[prop];
-		}
-		return commonProps;
 	}
 
 	_getSpriteTriggerPosition(sprite) {
@@ -445,9 +555,16 @@ class StoryScroll {
 		return animatedSpriteInstance;
 	}
 
-	_setActions(obj) {
-		obj.actionByStep = (props, section, triggerPosition) => this.actionByStep(obj, props, section, triggerPosition);
-		obj.setPin = (triggerPosition, section) => this.setPin(obj, triggerPosition, section);
+	_setProps(obj, props) {
+		if (props) {
+            for (const prop in props) {
+                if (props.hasOwnProperty(prop)) {
+                    obj[prop] = props[prop];
+                }
+            }
+		}
+		obj.zIndex = this.currentZIndex++;
+		return obj;
 	}
 
 	_setChapterChildren(chapter){
@@ -458,15 +575,20 @@ class StoryScroll {
 		chapter.chapter = (o) => this.chapter(o, chapter);
 	}
 
-	_setProps(sprite, props) {
-		if (props) {
-            for (const prop in props) {
-                if (props.hasOwnProperty(prop)) {
-                    sprite[prop] = props[prop];
-                }
-            }
+	_setActions(obj) {
+		obj.actionByStep = (props, section, triggerPosition) => this.actionByStep(obj, props, section, triggerPosition);
+		obj.setPin = (triggerPosition, section) => this.setPin(obj, triggerPosition, section);
+	}
+
+	_ship(obj, _parent) {
+		if (_parent) {
+			_parent.addChild(obj);
+		} else if (!this.progressive) {
+			this.containerScroll.addChild(obj);
+		} else {
+			this.nextPool.push(obj);
+			this.nextPool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
 		}
-		return sprite;
 	}
 
 	_createHash (hashLength) {

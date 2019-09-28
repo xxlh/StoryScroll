@@ -11,17 +11,28 @@ StoryScroll.prototype._setActions = function(obj) {
 	obj.action = (props, duration, triggerPosition) => this.action(obj, props, duration, triggerPosition);
 }
 
+StoryScroll.prototype._getCommonProps = function(obj, props) {
+	let commonProps = {};
+	for (const prop in props) {
+		if (!obj[prop] && typeof props[prop] != 'function') commonProps[prop] = props[prop];
+	}
+	return commonProps;
+}
+
 
 export let act = (() => {
 	StoryScroll.prototype.act = function(obj, props, duration) {
 		let commonProps = this._getCommonProps(obj, props);
+		obj.tweens = obj.tweens || [];
 		for (const prop in props) {
 			if (typeof props[prop] == 'object' && obj[prop]) {
-				TweenMax.to(obj[prop], duration, {...props[prop], ...commonProps});
+				const tweenInstance = TweenMax.to(obj[prop], duration, {...props[prop], ...commonProps});
+				if (commonProps.repeat == -1) obj.tweens.push(tweenInstance);
 				delete props[prop];
 			}
 		}
-		TweenMax.to(obj, duration, props);
+		const tweenInstance = TweenMax.to(obj, duration, props);
+		if (props.repeat == -1) obj.tweens.push(tweenInstance);
 	}
 
 	return StoryScroll.prototype.act;
@@ -67,6 +78,8 @@ export let action = (() => {
 					let tweenInstance = TweenMax.to(tweenTarget, action.duration, tweenVars);
 					storedAction.tween = tweenInstance;
 					storedAction.status = 'acting';
+					action.sprite.tweens = action.sprite.tweens || [];
+					if (action.props.repeat == -1) action.sprite.tweens.push(tweenInstance);
 				}
 			} else if(action.props.reverse !== false){
 				// 倒带

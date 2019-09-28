@@ -10,8 +10,7 @@ export let chapter2d = (() => {
 		this._setProps(chapter2d, o);
 		this._setChapterChildren(chapter2d);
         this._setActions(chapter2d);
-		if (_parent) _parent.addChild(chapter2d);
-		else this.containerScroll.addChild(chapter2d);
+		this._ship(chapter2d, _parent);
         return chapter2d; 
 	}
 	
@@ -33,8 +32,7 @@ export let sprite2d = (() => {
 		if (o.x || o.y) { sprite2d.position.set(o.x||0, o.y||0); delete o.x; delete o.y }
 		this._setProps(sprite2d, o);
         this._setActions(sprite2d);
-		if (_parent) _parent.addChild(sprite2d);
-		else this.containerScroll.addChild(sprite2d);
+		this._ship(sprite2d, _parent);
         return sprite2d;
 	}
 
