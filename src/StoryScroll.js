@@ -142,7 +142,7 @@ class StoryScroll {
 				this.stageZIndexes[comingObj.zIndex] = true;
 				this.stagePool.push(comingObj);
 				this.stagePoolByLen.push(comingObj);
-				this.stagePoolByLen.sort((a, b) => a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ] - b[this.scrollDirection]+ b[ this.scrollDirection?'width':'height' ]);
+				this.stagePoolByLen.sort((a, b) => (a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ]) - (b[this.scrollDirection] + b[ this.scrollDirection?'width':'height' ]));
 				goonStage.call(this);
 			}
 		}
