@@ -1,6 +1,6 @@
 {
   "name": "storyscroll",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "description": "The javascript library for story scroll interactions with html5 canvas",
   "main": "lib/storyscroll.cjs.js",
   "module": "lib/storyscroll.es.js",
@@ -12,7 +12,7 @@
     "cleanLib": "./node_modules/.bin/rimraf lib",
     "bableBuild": "./node_modules/.bin/babel src --out-dir lib --ignore '*.test.js'",
     "prepublish-deprecated": "npm run cleanLib && npm run bableBuild",
-    "prepublish": "npm run cleanLib && node build"
+    "prepublishOnly": "npm run cleanLib && node build"
   },
   "repository": {
     "type": "git",
@@ -24,13 +24,14 @@
       "name": "Little Linghuan",
       "email": "xiaolinghuan@eexx.me",
       "url": "https://ieexx.com"
-    }, {
+    },
+    {
       "name": "Esone",
       "email": "01@eexx.me",
       "url": "https://eexx.me"
     }
   ],
-  "license": "GPL",
+  "license": "GPL-3.0-only",
   "bugs": {
     "url": "https://github.com/xxlh/StoryScroll/issues"
   },
@@ -46,11 +47,12 @@
     "GSAP",
     "Canvas",
     "3D",
-	"2D",
-	"xlh",
-	"Esone"
+    "2D",
+    "xlh",
+    "Esone"
   ],
   "devDependencies": {
+    "@babel/core": "^7.12.10",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "@babel/preset-env": "^7.6.0",
     "express": "^4.17.1",

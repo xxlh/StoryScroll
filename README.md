@@ -65,10 +65,10 @@ const sprite1 = story.sprite(require('./images/sprite.png'), {x:40, y:540});
 const sprite2 = story.sprite(require('./images/sprite.png'), {x:80, y:540});
 
 // start loading for all sprites ABOVE
-story.loader.on("progress", (loader, resource) => {
+story.loader.onProgress.add((loader, resource) => {
 	console.log("Progress: " + (loader.progress|0) + "%");
-})
-.load((loader, resource) => {
+});
+story.loader.load((loader, resource) => {
 	console.log("All files loaded");
 });
 ```

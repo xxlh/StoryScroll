@@ -339,7 +339,7 @@ class StoryScroll {
 		this.app = new PIXI.Application( {backgroundColor : this.backgroundColor, antialias: this.antialias, resolution: 1});
 		this.loader = this.app.loader;
 		this.load = () => this.app.loader.load.call(this.app.loader);
-		this.loader.on("complete", loader => this.useLoader = false);
+		this.loader.onComplete.add(loader => this.useLoader = false);
 		
 		if(this.containerSelector === undefined){
 			const main = document.body.appendChild(document.createElement('main'));
@@ -499,7 +499,7 @@ class StoryScroll {
 		if (!this.useLoader) {
 			spriteInstance.texture = PIXI.Texture.from(imgsrc);
 		} else if (this.loader.resources[imgsrc]) {
-			this.loader.on("complete", (loader, resources) => spriteInstance.texture = resources[imgsrc].texture);
+			this.loader.onComplete.add((loader, resources) => spriteInstance.texture = resources[imgsrc].texture);
 		} else {
 			this.loader.add(imgsrc, resource => spriteInstance.texture = resource.texture);
 		}
@@ -521,7 +521,7 @@ class StoryScroll {
 					if (!this.loader.resources[imgsrc]) this.loader.add(imgsrc);
 				});
 
-				this.loader.on("complete", loader => {
+				this.loader.onComplete.add(loader => {
 					imgsrcs.forEach(imgsrc => {
 						textures.push(loader.resources[imgsrc].texture);
 					});
@@ -537,7 +537,7 @@ class StoryScroll {
 				if(!this.loader.resources[imgsrcs]) {
 					this.app.loader.add(imgsrcs, resource => setAnimatedSpriteTextures(animatedSpriteInstance, resource, autoPlay));
 				} else {
-					this.loader.on("complete", (loader, resources) => setAnimatedSpriteTextures(animatedSpriteInstance, resources[imgsrcs], autoPlay));
+					this.loader.onComplete.add((loader, resources) => setAnimatedSpriteTextures(animatedSpriteInstance, resources[imgsrcs], autoPlay));
 				}
 			}
 
