@@ -291,6 +291,8 @@ class StoryScroll {
 		this.containerSelector = o.container;
 		this.backgroundColor = o.bgcolor;
 		this.useLoader = o.loader || false;
+		this.actionDelaysOnLoaded = o.delay || 500;
+		this.loaded = false;
 		this.progressive = o.progressive || false;
 		this.antialias = o.antialias || false;
 		this.debug = o.debug || false;
@@ -339,7 +341,7 @@ class StoryScroll {
 		this.app = new PIXI.Application( {backgroundColor : this.backgroundColor, antialias: this.antialias, resolution: 1});
 		this.loader = this.app.loader;
 		this.load = () => this.app.loader.load.call(this.app.loader);
-		this.loader.onComplete.add(loader => this.useLoader = false);
+		this.loader.onComplete.add(loader => this.loaded = true);
 		
 		if(this.containerSelector === undefined){
 			const main = document.body.appendChild(document.createElement('main'));
@@ -496,7 +498,7 @@ class StoryScroll {
 	_createSprite(imgsrc){
 		var spriteInstance = new PIXI.Sprite.from(PIXI.Texture.EMPTY);
 		const loader = new PIXI.Loader();
-		if (!this.useLoader) {
+		if (!this.useLoader || this.loaded) {
 			spriteInstance.texture = PIXI.Texture.from(imgsrc);
 		} else if (this.loader.resources[imgsrc]) {
 			this.loader.onComplete.add((loader, resources) => spriteInstance.texture = resources[imgsrc].texture);
@@ -511,7 +513,7 @@ class StoryScroll {
 		let animatedSpriteInstance = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
 		if (typeof imgsrcs == 'object' && imgsrcs.length > 0) {
 			let textures = [];
-			if(!this.useLoader){
+			if(!this.useLoader || this.loaded){
 				imgsrcs.forEach(imgsrc => {
 					textures.push(PIXI.Texture.from(imgsrc));
 				});
@@ -530,7 +532,7 @@ class StoryScroll {
 				});
 			}
 		} else {
-			if (!this.useLoader) {
+			if (!this.useLoader || this.loaded) {
 				const loader = new PIXI.Loader();
 				loader.add(imgsrcs).load((loader, resources) => setAnimatedSpriteTextures(animatedSpriteInstance, resources[imgsrcs], autoPlay));
 			}else{
