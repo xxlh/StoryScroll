@@ -1,5 +1,5 @@
 import StoryScroll from 'storyscroll';
-import {TweenMax} from "gsap/TweenMax";
+import TweenMax from "gsap/TweenMax";
 
 
 StoryScroll.prototype.pointActions = [];

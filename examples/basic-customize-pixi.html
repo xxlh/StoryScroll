@@ -22,12 +22,14 @@
 	<script src="https://pixijs.download/release/packages/interaction.min.js"></script>
 	<script>
 	PIXI.Renderer.registerPlugin('batch', PIXI.BatchRenderer);
-	PIXI.Renderer.registerPlugin('interaction', PIXI.interaction.InteractionManager);
+	PIXI.Renderer.registerPlugin('interaction', PIXI.InteractionManager);
 	PIXI.Application.registerPlugin(PIXI.AppLoaderPlugin);
 	PIXI.Application.registerPlugin(PIXI.TickerPlugin);
 	PIXI.Loader.registerPlugin(PIXI.SpritesheetLoader);
 	</script>
 	<script src="../lib/storyscroll.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"></script>
+	<script src="../lib/story-action.min.js"></script>
 </head>
 <body>
 	<script>
@@ -41,7 +43,7 @@
 	});
 	
 	// create a graphic
-	var graphic = story.graphic({x:40, y:540}).action({x: 0,y:400}, 0.8);
+	var graphic = story.graphic({x:40, y:540}).action({x: 0,y:400}, 0.8, 100);
 	graphic.beginFill(0xDE3249);
 	graphic.drawRect(50, 50, 100, 100);
 	graphic.endFill();

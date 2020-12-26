@@ -78,7 +78,7 @@ rollup({
 
     // output gzip size
     const int = sizer.sync(code);
-    console.info('Compilation was a success! 👍');
+    console.info('👍 Main js compilation was a success! ');
     console.info(`~> gzip size: ${ pretty(int) }`);
   }).catch(console.error);
 }).catch(console.error);
@@ -96,19 +96,41 @@ rollup({
     format: 'cjs',
     file: 'lib/story-projection.js'
   });
-});
+  bun.write({
+    banner,
+    format: 'umd',
+    file: 'lib/story-projection.min.js',
+    name: pkg['umd:name'] + '-Projection'
+  }).then(_ => {
+    const data = fs.readFileSync('lib/story-projection.min.js', 'utf8');
+    const { code } = minify(data);
+    fs.writeFileSync('lib/story-projection.min.js', `${banner}\n${code}`);
+    console.info('👍 story-projection compilation was a success! ');
+  }).catch(console.error);
+}).catch(console.error);
 
 // story-action.js
 rollup({
 	input: 'src/story-action.js',
-	external: ['storyscroll', 'gsap/TweenMax'],
+	external: ['storyscroll', 'gsap/TweenMax', 'src/StoryScroll.js'],
 	plugins: [
 	  commonjs()
 	]
-  }).then(bun => {
+}).then(bun => {
 	bun.write({
 	  banner,
 	  format: 'cjs',
 	  file: 'lib/story-action.js'
 	});
-  });
+	bun.write({
+		banner,
+		format: 'umd',
+		file: 'lib/story-action.min.js',
+		name: pkg['umd:name'] + '-Action'
+	}).then(_ => {
+		const data = fs.readFileSync('lib/story-action.min.js', 'utf8');
+		const { code } = minify(data);
+		fs.writeFileSync('lib/story-action.min.js', `${banner}\n${code}`);
+		console.info('👍 story-action compilation was a success! ');
+	}).catch(console.error);
+}).catch(console.error);
