@@ -95,7 +95,7 @@
     "@pixi/text": "^5.1.3",
     "@pixi/ticker": "^5.1.3",
     "@pixi/utils": "^5.1.3",
-    "gsap": "^2.1.3",
+    "gsap": "^3.6.0",
     "judgebrowser": "^1.0.0",
     "pixi-projection": "^0.3.5",
 	"pixi.js": "^5.1.3"
