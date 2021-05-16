@@ -49,21 +49,34 @@ const sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).actio
 - `progressive`: `(boolean)` incremental loading of sprite to stage, default: false
 - `debug`: `(boolean)` output scroll position in console, default: false
 
-**Create sprite**:			`story.sprite(image, props);`
-
-**Create animated sprite**:
-```
-story.spriteAnimated(`image`, `props`, `autoPlay`);
+**Create sprite**:
+```javascript
+story.sprite(image, props);
 ```
 - `image`: `(string)` image URL
-- `props`: `(json)` initial props of sprite
+- `props`: `(json)` target props of [PIXI.Sprite](https://pixijs.download/release/docs/PIXI.Sprite.html)
+
+**Create animated sprite**:
+```javascript
+story.spriteAnimated(image, props, autoPlay);
+```
+- `image`: `(string)` image URL
+- `props`: `(json)` initial props of [PIXI.AnimatedSprite](https://pixijs.download/release/docs/PIXI.AnimatedSprite.html)
 - `autoPlay`: `(boolean)` default: false
 
-**Action by moving a position**:
+**Create chapter for sprites**:
+```javascript
+let chapter = story.chapter(props).actionByStep({x:-800}, 3200-310, 310);
+	let sprite1 = chapter.sprite(require("@/images/part1/telegraph_pole1.png"), {x:0, y:0,});
+	let sprite2 = chapter.sprite(require("@/images/part1/telegraph_pole21.png"), {x:2000, y:0,});
 ```
+- `props`: `(json)` initial props of [PIXI.Container](https://pixijs.download/release/docs/PIXI.Container.html)
+
+**Action by moving a position**:
+```javascript
 sprite.actionByStep(props, section, triggerPosition);
 ```
-- `props`: `(json)` target props of sprite
+- `props`: `(json)` target props of sprite or container
 - `section`: `(number)` section distance of moving with animation
 - `triggerPosition`: `(number)` move to where to trigger the animation, default: (position of this sprite)
 
