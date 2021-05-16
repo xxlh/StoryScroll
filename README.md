@@ -49,13 +49,20 @@ const sprite = story.sprite(require('./images/sprite.png'), {x:40, y:540}).actio
 - `progressive`: `(boolean)` incremental loading of sprite to stage, default: false
 - `debug`: `(boolean)` output scroll position in console, default: false
 
-**Create sprite**:			story.sprite(`image`, `props`);
+**Create sprite**:			`story.sprite(image, props);`
 
-**Create animated sprite**:	story.spriteAnimated(`image`, `props`, `autoPlay`);
+**Create animated sprite**:
+```
+story.spriteAnimated(`image`, `props`, `autoPlay`);
+```
 - `image`: `(string)` image URL
 - `props`: `(json)` initial props of sprite
 - `autoPlay`: `(boolean)` default: false
-**Action by moving a position**: sprite.actionByStep(`props`, `section`, `triggerPosition`);
+
+**Action by moving a position**:
+```
+sprite.actionByStep(props, section, triggerPosition);
+```
 - `props`: `(json)` target props of sprite
 - `section`: `(number)` section distance of moving with animation
 - `triggerPosition`: `(number)` move to where to trigger the animation, default: (position of this sprite)
@@ -93,9 +100,15 @@ The loader is implemented with PIXI.Loader, see more API in TweenMax docs: https
 Support to do .action() with TweenMax animation.
 
 #### Parameters
-**Animate by moving position**:	sprite.action(`props`, `duration`, `triggerPosition`);
+**Animate by moving position**:
+```javascript
+sprite.action(props, duration, triggerPosition);
+```
 
-**Animate mmediately**:			sprite.act(`props`, `duration`);
+**Animate immediately**:
+```javascript
+sprite.act(props, duration);
+```
 - `props`: `(json)` See the Vars of [TweenMax.to()](https://www.tweenmax.com.cn/api/tweenmax/TweenMax.to())
 - `duration`: `(number)` 
 - `triggerPosition`: `(number)` move to where to trigger the animation, default: (position of this sprite)
