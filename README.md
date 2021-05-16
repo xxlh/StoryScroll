@@ -5,6 +5,10 @@ The javascript library for story scroll interactions with html5 canvas.
 
 ![Example - Time](https://github.com/xxlh/StoryScroll/blob/master/src/img/example_time.gif)
 
+[![Example - Train](https://github.com/xxlh/StoryScroll/blob/master/src/img/example_train.gif)](http://fj.sina.cn/zt/train)
+
+[![Example - Moutain](https://github.com/xxlh/StoryScroll/blob/master/src/img/example_moutain.gif)](http://n.sinaimg.cn/fj/shiniusan/index999.html)
+
 See more with: `npm run demo`
 
 ## Installation
