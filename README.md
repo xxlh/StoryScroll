@@ -1,6 +1,12 @@
 # StoryScroll
 The javascript library for story scroll interactions with html5 canvas.
 
+## Example
+
+![Example - Time](https://github.com/xxlh/StoryScroll/blob/master/src/img/example_time.gif)
+
+See more with: `npm run demo`
+
 ## Installation
 
 __Option 1: npm__  
