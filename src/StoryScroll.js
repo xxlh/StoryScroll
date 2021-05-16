@@ -348,6 +348,7 @@ class StoryScroll {
 			main.appendChild(this.app.view);
 		}else{
 			document.querySelector(this.containerSelector).appendChild(this.app.view);
+			document.querySelector(this.containerSelector).style.overflow = 'hidden';
 		}
 
 		this.containerFitWindow = new PIXI.Container();
