@@ -106,6 +106,12 @@ class StoryScroll {
 		this.scroller.options.scrollingY = true;
 	}
 	
+	scrollTo(left, top){
+		let scrollerLeft = this.deviceOrientation == 'portrait' ? 0 : left  ||0;
+		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : top ||0;
+		this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
+	}
+
 	_scrollerCallback(left, top, zoom){
 		const Self = this;
 		this.scrollPosition = this._getSrollPosition(left, top);
