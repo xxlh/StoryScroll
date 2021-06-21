@@ -47,7 +47,21 @@ class StoryScroll {
 		this._ship(sprite, _parent);
 		return sprite;
 	};
-	
+	spriteVideo(videoUrl, o, _parent) {
+		let sprite = this._createVideo(videoUrl);
+        this._setProps(sprite, o);
+		this._setActions(sprite);
+		this._ship(sprite, _parent);
+		console.log(sprite)
+		sprite.play = function(){
+			console.log(sprite.texture.baseTexture.resource.source)
+			sprite.texture.baseTexture.resource.source.play()
+		}
+		sprite.pause= function(){
+			sprite.texture.baseTexture.resource.source.pause()
+		}
+		return sprite;
+	};
 	spriteAnimated(imgsrcs, o, autoPlay, _parent) {
 		let sprite = this._createAnimatedSprite(imgsrcs, autoPlay);
 		this._setProps(sprite, o);
@@ -515,7 +529,20 @@ class StoryScroll {
 		// this.loaderList.push(imgsrc);
         return spriteInstance;
 	}
-	
+	_createVideo(videUrl){
+		// const texture = PIXI.Texture.from(videUrl);
+		var spriteInstance = new PIXI.Sprite();
+		const loader = new PIXI.Loader();
+		if (!this.useLoader || this.loaded) {
+			spriteInstance.texture = PIXI.Texture.from(videUrl);
+		} else if (this.loader.resources[videUrl]) {
+			this.loader.onComplete.add((loader, resources) => spriteInstance.texture = resources[videUrl].texture);
+		} else {
+			this.loader.add(videUrl, resource => spriteInstance.texture = resource.texture);
+		}
+		// this.loaderList.push(imgsrc);
+        return spriteInstance;
+	}
 	_createAnimatedSprite(imgsrcs, autoPlay) {
 		let animatedSpriteInstance = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
 		if (typeof imgsrcs == 'object' && imgsrcs.length > 0) {
@@ -578,6 +605,7 @@ class StoryScroll {
 
 	_setChapterChildren(chapter){
 		chapter.sprite = (imgsrc, o) => this.sprite(imgsrc, o, chapter);
+		chapter.spriteVideo = (videoUrl, o) => this.spriteVideo(videoUrl, o, chapter);
 		chapter.spriteAnimated = (imgsrcs, o, autoPlay) => this.spriteAnimated(imgsrcs, o, autoPlay, chapter);
 		chapter.graphic = (o) => this.graphic(o, chapter);
 		chapter.text = (textCont, o, style_o) => this.text(textCont, o, style_o, chapter);

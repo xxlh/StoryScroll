@@ -1,0 +1,59 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Basic Example - StoryScroll</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.1.3/pixi.min.js"></script>
+	<script src="../lib/storyscroll.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"></script>
+	<script src="../lib/story-action.min.js"></script>
+</head>
+<body>
+	<script>
+	
+		var story = new StoryScroll ({
+			direction: 'y',
+			width: 750,
+			length: 20000,
+			debug: true,
+			bgcolor: 0x000000
+		});
+	
+
+	let videoCont = story.chapter({x:0, y:100, with:200,height:400});
+	var video = videoCont.spriteVideo("http://f.sinaimg.cn/fj/rejectsmoke/img/f24742a6302abc0344da7a6a1a66cbba.mp4", {x:0, y:0, with:200,height:400});
+	
+	video.interactive = true;
+	video.buttonMode = true;
+	video.on('pointertap', onPlayVideo);
+
+	var videoButton = videoCont.graphic({x:100, y:200,  alpha:1,});
+	videoButton.beginFill(0x0, 0.5)
+    .drawRoundedRect(0, 0, 100, 100, 10)
+    .endFill()
+    .beginFill(0xffffff)
+    .moveTo(36, 30)
+    .lineTo(36, 70)
+    .lineTo(70, 50);
+	videoButton.interactive = true;
+	videoButton.buttonMode = true;
+	videoButton.on('pointertap', onPlayVideo);
+
+	let isPlay = false;
+	function onPlayVideo() {
+		// isPlay ?  video.pause() : video.play();
+		// isPlay ? videoButton.alpha = 0 : videoButton.alpha = 1;
+		// isPlay = !isPlay
+		if(isPlay){
+			video.pause();
+			videoButton.alpha = 1
+		}else{
+			video.play();
+			videoButton.alpha = 0
+		}
+		isPlay = !isPlay
+	}
+	</script>
+</body>
+</html>
