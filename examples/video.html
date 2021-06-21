@@ -15,12 +15,12 @@
 		var story = new StoryScroll ({
 			direction: 'y',
 			width: 750,
-			length: 20000,
+			// length: 20000,
 			debug: true,
 			bgcolor: 0x000000
 		});
 	
-
+	story.restLenght(30000)
 	let videoCont = story.chapter({x:0, y:100, with:200,height:400});
 	var video = videoCont.spriteVideo("http://f.sinaimg.cn/fj/rejectsmoke/img/f24742a6302abc0344da7a6a1a66cbba.mp4", {x:0, y:0, with:200,height:400});
 	

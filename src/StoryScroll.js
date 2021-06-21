@@ -125,7 +125,11 @@ class StoryScroll {
 		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : top ||0;
 		this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 	}
-
+	restLenght(lenght){
+		this.designLength = lenght
+		
+		this._windowResize();
+	}
 	_scrollerCallback(left, top, zoom){
 		const Self = this;
 		this.scrollPosition = this._getSrollPosition(left, top);
@@ -389,7 +393,7 @@ class StoryScroll {
 		this._scalePrev = this._scale;
 		this._scale = this.deviceWidth / this.designWidth;
 		this.maxScroll = this.designLength - this.deviceHeight
-
+		console.log(this.designLength)
 		this.contentWidth = this.deviceWidth;
 		this.contentLength = this.designLength * this._scale;
 
