@@ -16,14 +16,13 @@
 			direction: 'y',
 			width: 750,
 			// length: 20000,
-			// loader:true,
+			loader:true,
 			debug: true,
 			bgcolor: 0x000000
 		});
 	
 	// story.restLenght(30000)
 	let videoCont = story.chapter({x:0, y:100, with:200,height:400});
-	let img = videoCont.sprite("1.png", {x:0, y:0, with:200,height:400});
 	let video = videoCont.spriteVideo("http://f.sinaimg.cn/fj/rejectsmoke/img/f24742a6302abc0344da7a6a1a66cbba.mp4", {x:0, y:0, with:200,height:400});
 	
 	video.interactive = true;
@@ -42,18 +41,14 @@
 	videoButton.buttonMode = true;
 	videoButton.on('pointertap', onPlayVideo);
 
-	story.loader.load((loader, resource) => {
-		console.log("All files loaded");
-			// console.log(img);
-			// console.log(video);
-	});
+	story.loader.load();
 
-	let isPlay = false;
+	video.isPlay = false;
 	function onPlayVideo() {
 		// isPlay ?  video.pause() : video.play();
 		// isPlay ? videoButton.alpha = 0 : videoButton.alpha = 1;
 		// isPlay = !isPlay
-		if(isPlay){
+		if(video.isPlay){
 			video.pause();
 			videoButton.alpha = 1
 		}else{
@@ -61,7 +56,7 @@
 			video.play();
 			videoButton.alpha = 0
 		}
-		isPlay = !isPlay
+		video.isPlay = !video.isPlay
 	}
 	</script>
 </body>

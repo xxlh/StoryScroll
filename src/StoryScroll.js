@@ -50,10 +50,10 @@ class StoryScroll {
 	spriteVideo(videoUrl, o, _parent) {
 		let sprite = this.sprite(videoUrl, o, _parent);
 		sprite.play = function(){
-			sprite.source.play()
+			sprite.texture.baseTexture.resource.source.play()
 		}
 		sprite.pause= function(){
-			sprite.source.pause()
+			sprite.texture.baseTexture.resource.source.pause()
 		}
 		return sprite;
 	};
@@ -516,21 +516,14 @@ class StoryScroll {
 	}
 	
 	_createSprite(imgsrc){
-		var spriteInstance = new PIXI.Sprite.from(PIXI.Texture.EMPTY);
-		const loader = new PIXI.Loader();
-		if (!this.useLoader || this.loaded) {
+		let spriteInstance = new PIXI.Sprite.from(PIXI.Texture.EMPTY);
+		let isVideo = /\.(mp4|mpg|avi|mkv|flv)$/.test(imgsrc)
+		if (!this.useLoader || this.loaded || isVideo) {
 			spriteInstance.texture = PIXI.Texture.from(imgsrc);
-			spriteInstance.source = spriteInstance.texture.baseTexture.resource.source;
 		} else if (this.loader.resources[imgsrc]) {
-			this.loader.onComplete.add((loader, resources) => {
-				spriteInstance.texture = resources[imgsrc].texture
-				spriteInstance.source = resources[imgsrc].data
-			});
+			this.loader.onComplete.add((loader, resources) => spriteInstance.texture = resources[imgsrc].texture);
 		} else {
-			this.loader.add(imgsrc, resource => {
-				spriteInstance.texture = resource.texture
-				spriteInstance.source = resource.data
-			});
+			this.loader.add(imgsrc, resource => spriteInstance.texture = resource.texture);
 		}
 		// this.loaderList.push(imgsrc);
         return spriteInstance;
