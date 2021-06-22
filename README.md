@@ -27,7 +27,7 @@ Please mind that since they are not core dependencies, you will have to add fram
 Include the *core* library in your HTML file:
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.1.3/pixi.min.js"></script>
-<script src="../lib/storyscroll.min.js"></script>
+<script src="https://unpkg.com/storyscroll@3.7.0/lib/storyscroll.min.js"></script>
 ```
 
 ## Usage

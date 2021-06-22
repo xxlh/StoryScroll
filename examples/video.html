@@ -16,19 +16,21 @@
 			direction: 'y',
 			width: 750,
 			// length: 20000,
+			// loader:true,
 			debug: true,
 			bgcolor: 0x000000
 		});
 	
-	story.restLenght(30000)
+	// story.restLenght(30000)
 	let videoCont = story.chapter({x:0, y:100, with:200,height:400});
-	var video = videoCont.spriteVideo("http://f.sinaimg.cn/fj/rejectsmoke/img/f24742a6302abc0344da7a6a1a66cbba.mp4", {x:0, y:0, with:200,height:400});
+	let img = videoCont.sprite("1.png", {x:0, y:0, with:200,height:400});
+	let video = videoCont.spriteVideo("http://f.sinaimg.cn/fj/rejectsmoke/img/f24742a6302abc0344da7a6a1a66cbba.mp4", {x:0, y:0, with:200,height:400});
 	
 	video.interactive = true;
 	video.buttonMode = true;
 	video.on('pointertap', onPlayVideo);
 
-	var videoButton = videoCont.graphic({x:100, y:200,  alpha:1,});
+	let videoButton = videoCont.graphic({x:100, y:200,  alpha:1,});
 	videoButton.beginFill(0x0, 0.5)
     .drawRoundedRect(0, 0, 100, 100, 10)
     .endFill()
@@ -40,6 +42,12 @@
 	videoButton.buttonMode = true;
 	videoButton.on('pointertap', onPlayVideo);
 
+	story.loader.load((loader, resource) => {
+		console.log("All files loaded");
+			// console.log(img);
+			// console.log(video);
+	});
+
 	let isPlay = false;
 	function onPlayVideo() {
 		// isPlay ?  video.pause() : video.play();
@@ -49,6 +57,7 @@
 			video.pause();
 			videoButton.alpha = 1
 		}else{
+			console.log(video.texture);
 			video.play();
 			videoButton.alpha = 0
 		}

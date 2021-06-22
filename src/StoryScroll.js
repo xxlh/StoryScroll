@@ -48,17 +48,12 @@ class StoryScroll {
 		return sprite;
 	};
 	spriteVideo(videoUrl, o, _parent) {
-		let sprite = this._createVideo(videoUrl);
-        this._setProps(sprite, o);
-		this._setActions(sprite);
-		this._ship(sprite, _parent);
-		console.log(sprite)
+		let sprite = this.sprite(videoUrl, o, _parent);
 		sprite.play = function(){
-			console.log(sprite.texture.baseTexture.resource.source)
-			sprite.texture.baseTexture.resource.source.play()
+			sprite.source.play()
 		}
 		sprite.pause= function(){
-			sprite.texture.baseTexture.resource.source.pause()
+			sprite.source.pause()
 		}
 		return sprite;
 	};
@@ -525,24 +520,17 @@ class StoryScroll {
 		const loader = new PIXI.Loader();
 		if (!this.useLoader || this.loaded) {
 			spriteInstance.texture = PIXI.Texture.from(imgsrc);
+			spriteInstance.source = spriteInstance.texture.baseTexture.resource.source;
 		} else if (this.loader.resources[imgsrc]) {
-			this.loader.onComplete.add((loader, resources) => spriteInstance.texture = resources[imgsrc].texture);
+			this.loader.onComplete.add((loader, resources) => {
+				spriteInstance.texture = resources[imgsrc].texture
+				spriteInstance.source = resources[imgsrc].data
+			});
 		} else {
-			this.loader.add(imgsrc, resource => spriteInstance.texture = resource.texture);
-		}
-		// this.loaderList.push(imgsrc);
-        return spriteInstance;
-	}
-	_createVideo(videUrl){
-		// const texture = PIXI.Texture.from(videUrl);
-		var spriteInstance = new PIXI.Sprite();
-		const loader = new PIXI.Loader();
-		if (!this.useLoader || this.loaded) {
-			spriteInstance.texture = PIXI.Texture.from(videUrl);
-		} else if (this.loader.resources[videUrl]) {
-			this.loader.onComplete.add((loader, resources) => spriteInstance.texture = resources[videUrl].texture);
-		} else {
-			this.loader.add(videUrl, resource => spriteInstance.texture = resource.texture);
+			this.loader.add(imgsrc, resource => {
+				spriteInstance.texture = resource.texture
+				spriteInstance.source = resource.data
+			});
 		}
 		// this.loaderList.push(imgsrc);
         return spriteInstance;
