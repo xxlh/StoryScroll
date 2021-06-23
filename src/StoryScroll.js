@@ -93,6 +93,7 @@ class StoryScroll {
 		this._setProps(sprite, o);
 		this._setActions(sprite);
 		this._ship(sprite, _parent);
+		console.log(sprite)
 		if (autoPlay !== false) sprite.play();
 		return sprite;
 	}
@@ -121,6 +122,7 @@ class StoryScroll {
 		let hash = this._createHash(8);
 		obj.actions[hash] = {action: {type:'section', props, section, triggerPosition}};
 		this.sectionActions.push({sprite:obj, hash, ...obj.actions[hash].action});
+		console.log("this.sectionActions first",this.sectionActions)
 		return obj;
 	}
 
@@ -273,8 +275,8 @@ class StoryScroll {
 
 		function triggerActionByStep(action) {
 			if (action.sprite._destroyed) return;
-			if (!_isOnStage(action.sprite)) return;
-
+			// if (!_isOnStage(action.sprite)) return;
+			
 			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
 				setProps('during', storedAction, action, this.storyPosition);

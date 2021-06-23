@@ -1,0 +1,44 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Basic Example - StoryScroll</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.1.3/pixi.min.js"></script>
+	<script src="../lib/storyscroll.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"></script>
+	<script src="../lib/story-action.min.js"></script>
+</head>
+<body>
+	<script>
+	
+		var story = new StoryScroll ({
+			direction: 'y',
+			width: 750,
+			// length: 20000,
+			loader:true,
+			// delay: 500,
+			// antialias: true,
+			// progressive: true,
+			// debug: true,
+			bgcolor: 0xffffff
+		});
+	
+	let spriteAnimate = story.spriteAnimated("boby.json", {x:0, y:0, animationSpeed: 0.05}).actionByStep({x:170,y:1000 }, 500, 100);
+	// console.log(spriteAnimate)
+	story.loader.load(()=>{
+		// console.log(spriteAnimate.play())
+		// spriteAnimate.play()
+		// spriteAnimate.actionByStep({y:1000 ,onComplete:()=>{
+			
+		// 	// spriteAnimate.gotoAndPlay(2)
+		// }}, 100, 1000);	
+
+		setTimeout(() => {
+			spriteAnimate.gotoAndStop(2)
+		}, 5000);
+		
+	});
+	</script>
+</body>
+</html>

@@ -22,38 +22,38 @@
 		});
 	
 	// story.restLenght(30000)
-	let videoCont = story.chapter({x:0, y:-400, width:200,height:400,alpha:1});
-	let video = videoCont.spriteVideo("http://f.sinaimg.cn/fj/rejectsmoke/img/f24742a6302abc0344da7a6a1a66cbba.mp4", {x:150, y:500, width:450,height:800});
+	let videoCont = story.chapter({x:0, y:100, width:200,height:400,alpha:1});
+	let video = videoCont.spriteVideo("http://f.sinaimg.cn/fj/rejectsmoke/img/f24742a6302abc0344da7a6a1a66cbba.mp4", { x:0, y:200, width:800,height:450});
 	
-	video.interactive = true;
-	video.buttonMode = true;
-	video.on('pointertap', onPlayVideo);
-	let videoButton = videoCont.graphic({x: video.x + (video.width-100)/2, y:video.y + (video.height - 100)/2,  alpha:1,});
-	videoButton.beginFill(0x0, 0.5)
-    .drawRoundedRect(0, 0, 100, 100, 50)
-    .endFill()
-    .beginFill(0xffffff)
-    .moveTo(36, 30)
-    .lineTo(36, 70)
-    .lineTo(70, 50);
-	videoButton.interactive = true;
-	videoButton.buttonMode = true;
-	videoButton.on('pointertap', onPlayVideo);
+	// let video = videoCont.spriteVideo("http://f.sinaimg.cn/fj/rejectsmoke/img/f24742a6302abc0344da7a6a1a66cbba.mp4", {hasVideoButton: false, x:150, y:500, width:800,height:800});
+	// video.interactive = true;
+	// video.buttonMode = true;
+	// video.on('pointertap', onPlayVideo);
+	// let videoButton = videoCont.graphic({x: video.x + (video.width-100)/2, y:video.y + (video.height - 100)/2,  alpha:1,});
+	// videoButton.beginFill(0x0, 0.5)
+    // .drawRoundedRect(0, 0, 100, 100, 50)
+    // .endFill()
+    // .beginFill(0xffffff)
+    // .moveTo(36, 30)
+    // .lineTo(36, 70)
+    // .lineTo(70, 50);
+	// videoButton.interactive = true;
+	// videoButton.buttonMode = true;
+	// videoButton.on('pointertap', onPlayVideo);
+	// video.isPlay = false;
+	// function onPlayVideo() {
+	// 	if(video.isPlay){
+	// 		video.pause();
+	// 		videoButton.alpha = 1
+	// 	}else{
+	// 		console.log(video.texture);
+	// 		video.play();
+	// 		// videoButton.alpha = 0
+	// 	}
+	// 	video.isPlay = !video.isPlay
+	// }
 
-	story.loader.load();
-
-	video.isPlay = false;
-	function onPlayVideo() {
-		if(video.isPlay){
-			video.pause();
-			videoButton.alpha = 1
-		}else{
-			console.log(video.texture);
-			video.play();
-			// videoButton.alpha = 0
-		}
-		video.isPlay = !video.isPlay
-	}
+	// story.loader.load();
 	</script>
 </body>
 </html>

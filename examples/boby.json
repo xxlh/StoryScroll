@@ -1,0 +1,31 @@
+{"frames": {
+
+"boy1.png":
+{
+	"frame": {"x":392,"y":1,"w":358,"h":407},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":358,"h":407},
+	"sourceSize": {"w":400,"h":407}
+},
+"boy2.png":
+{
+	"frame": {"x":1,"y":1,"w":389,"h":407},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":389,"h":407},
+	"sourceSize": {"w":400,"h":407}
+}},
+"animations": {
+	"boy": ["boy1.png","boy2.png"]
+},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "boby.png",
+	"format": "RGBA8888",
+	"size": {"w":751,"h":409},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:0e5ca21dfc72d968418d85f3ca51a4b1:655fcb0186c8451fe152f692aa278643:5202183a31e764f9756d50ebb04409b8$"
+}
+}
