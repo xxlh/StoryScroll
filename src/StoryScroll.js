@@ -55,6 +55,37 @@ class StoryScroll {
 		sprite.pause= function(){
 			sprite.texture.baseTexture.resource.source.pause()
 		}
+
+		if(o.hasVideoButton!== false){
+			let videoButton = this.graphic({o,...{x: o.x + (o.width-100)/2, y:o.y + (o.height - 100)/2,  alpha:1,}}, _parent);
+			videoButton.beginFill(0x0, 0.5)
+			.drawRoundedRect(0, 0, 100, 100, 50)
+			.endFill()
+			.beginFill(0xffffff)
+			.moveTo(36, 30)
+			.lineTo(36, 70)
+			.lineTo(70, 50);
+			videoButton.interactive = true;
+			videoButton.buttonMode = true;
+			videoButton.on('pointertap', toggleVideo);
+
+			sprite.interactive = true;
+			sprite.buttonMode = true;
+			sprite.on('pointertap', toggleVideo);
+
+			sprite.isPlay = false;
+			function toggleVideo() {
+				if(sprite.isPlay){
+					sprite.pause();
+					videoButton.alpha = 1
+				}else{
+					sprite.play();
+					videoButton.alpha = 0
+				}
+				sprite.isPlay = !sprite.isPlay
+			}
+		}
+
 		return sprite;
 	};
 	spriteAnimated(imgsrcs, o, autoPlay, _parent) {
@@ -518,8 +549,10 @@ class StoryScroll {
 	_createSprite(imgsrc){
 		let spriteInstance = new PIXI.Sprite.from(PIXI.Texture.EMPTY);
 		let isVideo = /\.(mp4|mpg|avi|mkv|flv)$/.test(imgsrc)
+		spriteInstance.isVideo = false;
 		if (!this.useLoader || this.loaded || isVideo) {
 			spriteInstance.texture = PIXI.Texture.from(imgsrc);
+			spriteInstance.isVideo = !spriteInstance.isVideo;
 		} else if (this.loader.resources[imgsrc]) {
 			this.loader.onComplete.add((loader, resources) => spriteInstance.texture = resources[imgsrc].texture);
 		} else {
