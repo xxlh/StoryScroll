@@ -122,7 +122,6 @@ class StoryScroll {
 		let hash = this._createHash(8);
 		obj.actions[hash] = {action: {type:'section', props, section, triggerPosition}};
 		this.sectionActions.push({sprite:obj, hash, ...obj.actions[hash].action});
-		console.log("this.sectionActions first",this.sectionActions)
 		return obj;
 	}
 
@@ -165,10 +164,12 @@ class StoryScroll {
 		this.scrollDirection == 'y' ? this.containerScroll.y = -this.storyPosition : this.containerScroll.x = -this.storyPosition;
 		
 		// Get Stage
-		goonStage.call(this);
-		leaveStage.call(this);
-		recallStage.call(this);
-		pulldownStage.call(this);
+		if (this.progressive) {
+			goonStage.call(this);
+			leaveStage.call(this);
+			recallStage.call(this);
+			pulldownStage.call(this);
+		}
 
 		// Run Actions
 		this.sectionActions.forEach(action => {
@@ -269,13 +270,14 @@ class StoryScroll {
 				});
 		}
 		function _isOnStage(obj) {
+			if (!Self.progressive) return true;
 			if (Self.stageZIndexes[ obj.zIndex ]) return true;
 			return false;
 		}
 
 		function triggerActionByStep(action) {
 			if (action.sprite._destroyed) return;
-			// if (!_isOnStage(action.sprite)) return;
+			if (!_isOnStage(action.sprite)) return;
 			
 			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
