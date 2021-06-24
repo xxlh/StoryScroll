@@ -1,0 +1,63 @@
+{"frames": {
+
+"water1.png":
+{
+	"frame": {"x":1,"y":1,"w":416,"h":556},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":416,"h":556},
+	"sourceSize": {"w":416,"h":556}
+},
+"water2.png":
+{
+	"frame": {"x":1,"y":559,"w":416,"h":556},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":416,"h":556},
+	"sourceSize": {"w":416,"h":556}
+},
+"water3.png":
+{
+	"frame": {"x":419,"y":1,"w":416,"h":556},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":416,"h":556},
+	"sourceSize": {"w":416,"h":556}
+},
+"water4.png":
+{
+	"frame": {"x":1,"y":1117,"w":416,"h":556},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":416,"h":556},
+	"sourceSize": {"w":416,"h":556}
+},
+"water5.png":
+{
+	"frame": {"x":419,"y":559,"w":416,"h":556},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":416,"h":556},
+	"sourceSize": {"w":416,"h":556}
+},
+"water6.png":
+{
+	"frame": {"x":419,"y":1117,"w":416,"h":556},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":416,"h":556},
+	"sourceSize": {"w":416,"h":556}
+}},
+"animations": {
+	"water": ["water1.png","water2.png","water3.png","water4.png","water5.png","water6.png"]
+},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "water.png",
+	"format": "RGBA8888",
+	"size": {"w":836,"h":1674},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:7a0670688a75fbd372244a759939b760:6e94c3f3317598367511137faade8d4a:915b9e2c60291fd5f1d6c786f7274850$"
+}
+}
