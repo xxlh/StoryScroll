@@ -24,19 +24,19 @@
 			bgcolor: 0xffffff
 		});
 	
-	let spriteAnimate = story.spriteAnimated("water.json", {x:0, y:0, animationSpeed: 0.05},false);
+	let spriteAnimate = story.spriteAnimated("water.json", {x:0, y:200, animationSpeed: 0.05},false);
 	// console.log(spriteAnimate)
 	story.loader.load(()=>{
 		// console.log(spriteAnimate.play())
 		// spriteAnimate.play()
-		spriteAnimate.playByStep({fps:2, from:1, to:2}, 50, 100);
+		spriteAnimate.playByStep({fps:2, from:0, to:5,curr:{from:0}}, 100, 100)
 		// spriteAnimate.actionByStep({y:1000 ,onComplete:()=>{
 			// console.log(1111);
-			spriteAnimate.gotoAndPlay(0)
-			setTimeout(() => {
-			spriteAnimate.gotoAndStop(1)
+			// spriteAnimate.gotoAndPlay(0)
+		// 	setTimeout(() => {
+		// 	spriteAnimate.gotoAndStop(1)
 			
-		}, 1000);
+		// }, 1000);
 		// }}, 500, 100);	
 
 		

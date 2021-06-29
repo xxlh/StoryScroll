@@ -353,66 +353,40 @@ class StoryScroll {
 			if (action.sprite._destroyed) return;
 			if (!_isOnStage(action.sprite)) return;
 			
-			// let storedAction = action.sprite.actions[action.hash];
-			// console.log(storedAction)
+
+			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
-				// setProps('during', storedAction, action, this.storyPosition);
-				
-				_scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.props.from, action.props.to);
-			
+				setProps('during', storedAction, action, this.storyPosition);
 			} else if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 强制达到最终态
-				action.sprite.gotoAndStop(action.props.to)
-				// setProps('after', storedAction, action, this.storyPosition);
+				setProps('after', storedAction, action, this.storyPosition);
 			} else if (this.storyPosition < action.triggerPosition) {
 				// 强制回复最终态
-				// setProps('before', storedAction, action, this.storyPosition);
-				action.sprite.gotoAndStop(action.props.from)
-			}
-			// ToDo: before, after在多个动画区间bug，after>storyPosition 且 < 下一个区间的triggerPosition
-
-			// 区间最小值, 区间最大值, top, 初始位置, 终点, 速度, 方向
-			let n = action.props.from;
-			// if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
-			// 	} else{
-			// 	action.sprite.gotoAndStop(action.props.to)
-			// }
-			
-						
-			function _scrollNum(minNum,maxNum,top,start,end) {
-				
-				if((top - minNum) % ((maxNum - minNum)/(end-start))){
-					action.sprite.gotoAndPlay(n)
-					
-				}
-				else{
-					action.sprite.gotoAndStop(n+1)
-					
-				}
-				n++
-				// console.log(action.sprite[prop]);
-				// return start + ((top - minNum)/(maxNum - minNum)*(end-start));
+				setProps('before', storedAction, action, this.storyPosition);
 			}
 			function setProps(positionStatus, storedAction, action, storyPosition) {
 				positionStatus = positionStatus || 'before';
 				storedAction.originProps = storedAction.originProps || {};
-				
-				// for (var prop in action.props) {
-				// 	if (storedAction.originProps[prop] === undefined) 
-				// 	// storedAction.originProps[prop] = action.sprite[prop];
-				// 	if (positionStatus == 'before') {
-				// 		// action.sprite[prop] = storedAction.originProps[prop];
-				// 	} else if (positionStatus == 'after') {
-				// 		// action.sprite[prop] = action.props[prop];
-				// 	} else {
-						// action.sprite[prop] = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop], action.props[prop]);
-						// action.sprite[prop] = 
-						_scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, action.props.from, action.props.to);
-						
-					// }
-					
-				// }
+				for (var prop in action.props) {
+					if (storedAction.originProps[prop] === undefined) storedAction.originProps = action.props;
+					if (positionStatus == 'before') {
+						action.props.curr.from = storedAction.originProps.from;
+					} else if (positionStatus == 'after') {
+						action.props.curr.from = storedAction.originProps.to;
+					} else {
+						action.props.curr = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps, action.props.curr);
+					}
+				}
 			}
+			function _scrollNum(minNum,maxNum,top,originProps,prev) {
+				let curr = {...prev};
+				curr.from = Math.floor(Math.floor((top - minNum)) / (Math.floor((maxNum - minNum)/(originProps.to-originProps.from))))
+				if(!(curr.from == prev.from)){
+					action.sprite.gotoAndStop(curr.from)
+				}
+				return curr;
+			}
+			
 		}
 	}
 	
