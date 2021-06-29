@@ -66,11 +66,19 @@ story.sprite(image, props);
 - `image`: `(string)` image URL
 - `props`: `(json)` target props of [PIXI.Sprite](https://pixijs.download/release/docs/PIXI.Sprite.html)
 
+**Create sprite**:
+```javascript
+story.spriteVideo(video, props);
+```
+- `video`: `(string)` video URL
+- `props`: `(json)` target props of [PIXI.Sprite](https://pixijs.download/release/docs/PIXI.Sprite.html)
+  - `props.hasVideoButton`: `(boolean)` add play button, default: true
+
 **Create animated sprite**:
 ```javascript
-story.spriteAnimated(image, props, autoPlay);
+story.spriteAnimated(source, props, autoPlay);
 ```
-- `image`: `(string)` image URL
+- `source`: `(string|array)` texture json URL, or images URL array
 - `props`: `(json)` initial props of [PIXI.AnimatedSprite](https://pixijs.download/release/docs/PIXI.AnimatedSprite.html)
 - `autoPlay`: `(boolean)` default: false
 
@@ -87,6 +95,17 @@ let chapter = story.chapter(props).actionByStep({x:-800}, 3200-310, 310);
 sprite.actionByStep(props, section, triggerPosition);
 ```
 - `props`: `(json)` target props of sprite or container
+- `section`: `(number)` section distance of moving with animation
+- `triggerPosition`: `(number)` move to where to trigger the animation, default: (position of this sprite)
+
+**Action by moving a position**:
+```javascript
+let sprite = story.spriteAnimated("man.json", {x:0,y:100}, false);
+sprite.playByStep({from, to[, speed]}, section, triggerPosition);
+```
+- `from`: `(number)` start frame of the animatedSprite
+- `to`: `(number)` end frame of the animatedSprite
+- `speed`: `(number)` section distance of from - to. If set, animatedSprite will repeat animating
 - `section`: `(number)` section distance of moving with animation
 - `triggerPosition`: `(number)` move to where to trigger the animation, default: (position of this sprite)
 

@@ -355,7 +355,8 @@ class StoryScroll {
 
 			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
-				let midstate = _getMidstate(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.fromto.from, action.fromto.to);
+				action.fromto.speed = action.fromto.speed || action.section;
+				let midstate = _getMidstate(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.fromto.from, action.fromto.to, action.fromto.speed);
 				if (midstate != storedAction.current) goto(action.sprite, midstate, storedAction);
 			} else if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 强制达到最终态
@@ -364,8 +365,10 @@ class StoryScroll {
 				// 强制回复最终态
 				goto(action.sprite, action.fromto.from, storedAction);
 			}
-			function _getMidstate(minNum,maxNum,top,from,to) {
-				return from + Math.floor((top - minNum) / (maxNum - minNum)*(to-from))
+			function _getMidstate(minNum,maxNum,top,from,to,speed) {
+				let times = (maxNum - minNum) / speed;
+				let delta = Math.floor((top - minNum) / (maxNum - minNum)*(to-from)*times);
+				return from + delta % speed;
 			}
 			function goto(sprite, frame, storedAction) {
 				sprite.gotoAndStop(frame);
