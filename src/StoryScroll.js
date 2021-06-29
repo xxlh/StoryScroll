@@ -128,12 +128,12 @@ class StoryScroll {
 		this.sectionActions.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
 	}
-	playByStep(obj, props, section, triggerPosition) {
+	playByStep(obj, fromto, section, triggerPosition) {
 		if (triggerPosition === undefined) triggerPosition = this._getSpriteTriggerPosition(obj);
 		if (!obj.actions) obj.actions = {};
 		let hash = this._createHash(8);
-		obj.actions[hash] = {action: {type:'animatePlay', props, section, triggerPosition}};
-		this.sectionAnimatePlay.push({sprite:obj, hash, ...obj.actions[hash].action});
+		obj.actions[hash] = {action: {type:'animatePlay', fromto, section, triggerPosition}};
+		this.sectionAnimations.push({sprite:obj, hash, ...obj.actions[hash].action});
 		return obj;
 	}
 	setPin(obj, triggerPosition, section) {
@@ -189,7 +189,7 @@ class StoryScroll {
 		this.pinActions.forEach(action => {
 			triggerActionSetPin.call(this, action);
 		});
-		this.sectionAnimatePlay.forEach(action => {
+		this.sectionAnimations.forEach(action => {
 			triggerAnimatePlayByStep.call(this, action);
 		});
 		if (this.debug) {
@@ -305,7 +305,7 @@ class StoryScroll {
 			// ToDo: before, after在多个动画区间bug，after>storyPosition 且 < 下一个区间的triggerPosition
 
 			// 区间最小值, 区间最大值, top, 初始位置, 终点, 速度, 方向
-			function _scrollNum(minNum,maxNum,top,start,end) {
+			function _getMidstate(minNum,maxNum,top,start,end) {
 				return start + ((top - minNum)/(maxNum - minNum)*(end-start));
 			}
 			function setProps(positionStatus, storedAction, action, storyPosition) {
@@ -321,7 +321,7 @@ class StoryScroll {
 							} else if (positionStatus == 'after') {
 								action.sprite[prop][subprop] = action.props[prop][subprop];
 							} else {
-								action.sprite[prop][subprop] = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop][subprop], action.props[prop][subprop]);
+								action.sprite[prop][subprop] = _getMidstate(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop][subprop], action.props[prop][subprop]);
 							}
 						}
 					} else {
@@ -331,7 +331,7 @@ class StoryScroll {
 						} else if (positionStatus == 'after') {
 							action.sprite[prop] = action.props[prop];
 						} else {
-							action.sprite[prop] = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop], action.props[prop]);
+							action.sprite[prop] = _getMidstate(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop], action.props[prop]);
 						}
 					}
 				}
@@ -352,41 +352,25 @@ class StoryScroll {
 		function triggerAnimatePlayByStep(action) {
 			if (action.sprite._destroyed) return;
 			if (!_isOnStage(action.sprite)) return;
-			
 
 			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
-				setProps('during', storedAction, action, this.storyPosition);
+				let midstate = _getMidstate(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.fromto.from, action.fromto.to);
+				if (midstate != storedAction.current) goto(action.sprite, midstate, storedAction);
 			} else if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 强制达到最终态
-				setProps('after', storedAction, action, this.storyPosition);
+				goto(action.sprite, action.fromto.to, storedAction);
 			} else if (this.storyPosition < action.triggerPosition) {
 				// 强制回复最终态
-				setProps('before', storedAction, action, this.storyPosition);
+				goto(action.sprite, action.fromto.from, storedAction);
 			}
-			function setProps(positionStatus, storedAction, action, storyPosition) {
-				positionStatus = positionStatus || 'before';
-				storedAction.originProps = storedAction.originProps || {};
-				for (var prop in action.props) {
-					if (storedAction.originProps[prop] === undefined) storedAction.originProps = action.props;
-					if (positionStatus == 'before') {
-						action.props.curr.from = storedAction.originProps.from;
-					} else if (positionStatus == 'after') {
-						action.props.curr.from = storedAction.originProps.to;
-					} else {
-						action.props.curr = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps, action.props.curr);
-					}
-				}
+			function _getMidstate(minNum,maxNum,top,from,to) {
+				return from + Math.floor((top - minNum) / (maxNum - minNum)*(to-from))
 			}
-			function _scrollNum(minNum,maxNum,top,originProps,prev) {
-				let curr = {...prev};
-				curr.from = Math.floor(Math.floor((top - minNum)) / (Math.floor((maxNum - minNum)/(originProps.to-originProps.from))))
-				if(!(curr.from == prev.from)){
-					action.sprite.gotoAndStop(curr.from)
-				}
-				return curr;
+			function goto(sprite, frame, storedAction) {
+				sprite.gotoAndStop(frame);
+				storedAction.current = frame;
 			}
-			
 		}
 	}
 	
@@ -410,7 +394,7 @@ class StoryScroll {
 		this.designOrientation = this.scrollDirection == 'y' ? 'portrait' : 'landscape'
 		this.pinActions = [];
 		this.sectionActions = [];
-		this.sectionAnimatePlay =[];
+		this.sectionAnimations =[];
 		this.loaderList = [];
 		
 		this.scroller = new Scroller((left, top, zoom) => this._scrollerCallback(left, top, zoom), {

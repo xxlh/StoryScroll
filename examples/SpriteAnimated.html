@@ -29,7 +29,7 @@
 	story.loader.load(()=>{
 		// console.log(spriteAnimate.play())
 		// spriteAnimate.play()
-		spriteAnimate.playByStep({fps:2, from:0, to:5,curr:{from:0}}, 100, 100)
+		spriteAnimate.playByStep({fps:2, from:0, to:5,curr:{from:0}}, 300, 100).actionByStep({y:600}, 300, 100)
 		// spriteAnimate.actionByStep({y:1000 ,onComplete:()=>{
 			// console.log(1111);
 			// spriteAnimate.gotoAndPlay(0)
