@@ -353,39 +353,65 @@ class StoryScroll {
 			if (action.sprite._destroyed) return;
 			if (!_isOnStage(action.sprite)) return;
 			
-			let storedAction = action.sprite.actions[action.hash];
+			// let storedAction = action.sprite.actions[action.hash];
+			// console.log(storedAction)
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
-				setProps('during', storedAction, action, this.storyPosition);
+				// setProps('during', storedAction, action, this.storyPosition);
+				
+				_scrollNum(action.triggerPosition, action.triggerPosition + action.section, this.storyPosition, action.props.from, action.props.to);
+			
 			} else if (this.storyPosition >= action.triggerPosition + action.section) {
 				// 强制达到最终态
-				setProps('after', storedAction, action, this.storyPosition);
+				action.sprite.gotoAndStop(action.props.to)
+				// setProps('after', storedAction, action, this.storyPosition);
 			} else if (this.storyPosition < action.triggerPosition) {
 				// 强制回复最终态
-				setProps('before', storedAction, action, this.storyPosition);
+				// setProps('before', storedAction, action, this.storyPosition);
+				action.sprite.gotoAndStop(action.props.from)
 			}
 			// ToDo: before, after在多个动画区间bug，after>storyPosition 且 < 下一个区间的triggerPosition
 
 			// 区间最小值, 区间最大值, top, 初始位置, 终点, 速度, 方向
+			let n = action.props.from;
+			// if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
+			// 	} else{
+			// 	action.sprite.gotoAndStop(action.props.to)
+			// }
+			
+						
 			function _scrollNum(minNum,maxNum,top,start,end) {
-				if(top % (maxNum - minNum)){
-					action.sprite.gotoAndPlay()
+				
+				if((top - minNum) % ((maxNum - minNum)/(end-start))){
+					action.sprite.gotoAndPlay(n)
+					
 				}
-				return start + ((top - minNum)/(maxNum - minNum)*(end-start));
+				else{
+					action.sprite.gotoAndStop(n+1)
+					
+				}
+				n++
+				// console.log(action.sprite[prop]);
+				// return start + ((top - minNum)/(maxNum - minNum)*(end-start));
 			}
 			function setProps(positionStatus, storedAction, action, storyPosition) {
 				positionStatus = positionStatus || 'before';
 				storedAction.originProps = storedAction.originProps || {};
-				for (var prop in action.props) {
-					if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = action.sprite[prop];
-					if (positionStatus == 'before') {
-						action.sprite[prop] = storedAction.originProps[prop];
-					} else if (positionStatus == 'after') {
-						action.sprite[prop] = action.props[prop];
-					} else {
-						action.sprite[prop] = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop], action.props[prop]);
-					}
+				
+				// for (var prop in action.props) {
+				// 	if (storedAction.originProps[prop] === undefined) 
+				// 	// storedAction.originProps[prop] = action.sprite[prop];
+				// 	if (positionStatus == 'before') {
+				// 		// action.sprite[prop] = storedAction.originProps[prop];
+				// 	} else if (positionStatus == 'after') {
+				// 		// action.sprite[prop] = action.props[prop];
+				// 	} else {
+						// action.sprite[prop] = _scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop], action.props[prop]);
+						// action.sprite[prop] = 
+						_scrollNum(action.triggerPosition, action.triggerPosition + action.section, storyPosition, action.props.from, action.props.to);
+						
+					// }
 					
-				}
+				// }
 			}
 		}
 	}
