@@ -163,9 +163,8 @@ class StoryScroll {
 		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : top ||0;
 		this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 	}
-	restLenght(lenght){
-		this.designLength = lenght
-		
+	restLenght(length){
+		this.designLength = length
 		this._windowResize();
 	}
 	_scrollerCallback(left, top, zoom){
@@ -207,7 +206,7 @@ class StoryScroll {
 			if (this.nextPool[0][this.scrollDirection] < this.storyPosition + this.viewLength + (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				let comingObj = this.nextPool.shift();
 				this.containerScroll.addChild(comingObj);
-				this.stageZIndexes[comingObj.zIndex] = true;
+				_markOnStage(comingObj);
 				this.stagePool.push(comingObj);
 				this.stagePoolByLen.push(comingObj);
 				this.stagePoolByLen.sort((a, b) => (a[this.scrollDirection] + a[ this.scrollDirection?'width':'height' ]) - (b[this.scrollDirection] + b[ this.scrollDirection?'width':'height' ]));
@@ -221,7 +220,7 @@ class StoryScroll {
 			if (this.stagePoolByLen[0][this.scrollDirection] + _getStageObjWidth(this.stagePoolByLen[0]) < this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				const leavingObj = this.stagePoolByLen.shift();
 				this.containerScroll.removeChild(leavingObj);
-				delete this.stageZIndexes[leavingObj.zIndex];
+				_markLeaveStage(leavingObj)
 				this.prevPool.push(leavingObj);
 				_pauseRepeatAction(leavingObj);
 				leaveStage.call(this);
@@ -239,7 +238,7 @@ class StoryScroll {
 			if (this.prevPool[this.prevPool.length-1][this.scrollDirection] + _getStageObjWidth(this.prevPool[this.prevPool.length-1]) > this.storyPosition - (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				let comingObj = this.prevPool.pop();
 				this.containerScroll.addChild(comingObj);
-				this.stageZIndexes[comingObj.zIndex] = true;
+				_markOnStage(comingObj);
 				this.stagePoolByLen.unshift(comingObj);
 				this.stagePool.unshift(comingObj);
 				this.stagePool.sort((a, b) => a[this.scrollDirection] - b[this.scrollDirection]);
@@ -253,7 +252,7 @@ class StoryScroll {
 			if (this.stagePool[this.stagePool.length-1][this.scrollDirection] > this.storyPosition + this.viewLength + (this.STAGE_BOUNDARY-1)/2*this.viewLength) {
 				const leavingObj = this.stagePool.pop();
 				this.containerScroll.removeChild(leavingObj);
-				delete this.stageZIndexes[leavingObj.zIndex];
+				_markLeaveStage(leavingObj);
 				this.nextPool.unshift(leavingObj);
 				_pauseRepeatAction(leavingObj);
 				pulldownStage.call(this);
@@ -281,6 +280,16 @@ class StoryScroll {
 				if (obj.tweens) obj.tweens.forEach(tween => {
 					if (!tween.pausedAtLeaving) tween.play();
 				});
+		}
+		function _markOnStage(obj) {
+			Self.stageZIndexes[obj.zIndex] = true;
+			if(obj.children && obj.children.length > 0 )
+				obj.children.map((child) => _markOnStage(child))
+		}
+		function _markLeaveStage(obj) {
+			delete Self.stageZIndexes[obj.zIndex];
+			if(obj.children && obj.children.length > 0 )
+				obj.children.map((child) => _markLeaveStage(child))
 		}
 		function _isOnStage(obj) {
 			if (!Self.progressive) return true;
@@ -690,9 +699,6 @@ class StoryScroll {
 	_ship(obj, _parent) {
 		if (_parent) {
 			_parent.addChild(obj);
-			if(this.progressive){
-				this.stageZIndexes[obj.zIndex] = true;
-			}
 		} else if (!this.progressive) {
 			this.containerScroll.addChild(obj);
 		} else {
