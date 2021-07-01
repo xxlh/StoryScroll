@@ -289,8 +289,10 @@ class StoryScroll {
 		}
 
 		function triggerActionByStep(action) {
+
+			console.log("triggerActionByStep",_isOnStage(action.sprite)) 
 			if (action.sprite._destroyed) return;
-			if (!_isOnStage(action.sprite)) return;
+			// if (!_isOnStage(action.sprite)) return;
 			
 			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
@@ -683,6 +685,9 @@ class StoryScroll {
 	_ship(obj, _parent) {
 		if (_parent) {
 			_parent.addChild(obj);
+			if(this.progressive){
+				this.stageZIndexes[obj.zIndex] = true;
+			}
 		} else if (!this.progressive) {
 			this.containerScroll.addChild(obj);
 		} else {
