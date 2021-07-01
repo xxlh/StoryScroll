@@ -289,10 +289,8 @@ class StoryScroll {
 		}
 
 		function triggerActionByStep(action) {
-
-			console.log("triggerActionByStep",_isOnStage(action.sprite)) 
 			if (action.sprite._destroyed) return;
-			// if (!_isOnStage(action.sprite)) return;
+			if (!_isOnStage(action.sprite)) return;
 			
 			let storedAction = action.sprite.actions[action.hash];
 			if ( action.triggerPosition <= this.storyPosition && this.storyPosition < action.triggerPosition + action.section) {
@@ -317,26 +315,33 @@ class StoryScroll {
 					if (typeof action.props[prop] == 'object') {
 						for (var subprop in action.props[prop]) {
 							if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = {};
-							if (storedAction.originProps[prop][subprop] === undefined) storedAction.originProps[prop][subprop] = action.sprite[prop][subprop];
 							if (positionStatus == 'before') {
+								if (storedAction.status == 'before') continue;
+								if (storedAction.originProps[prop][subprop] !== undefined)
 								action.sprite[prop][subprop] = storedAction.originProps[prop][subprop];
 							} else if (positionStatus == 'after') {
+								if (storedAction.status == 'after') continue;
 								action.sprite[prop][subprop] = action.props[prop][subprop];
 							} else {
+								if (storedAction.originProps[prop][subprop] === undefined) storedAction.originProps[prop][subprop] = action.sprite[prop][subprop];
 								action.sprite[prop][subprop] = _getMidstate(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop][subprop], action.props[prop][subprop]);
 							}
 						}
 					} else {
-						if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = action.sprite[prop];
 						if (positionStatus == 'before') {
+							if (storedAction.status == 'before') continue;
+							if (storedAction.originProps[prop] !== undefined)
 							action.sprite[prop] = storedAction.originProps[prop];
 						} else if (positionStatus == 'after') {
+							if (storedAction.status == 'after') continue;
 							action.sprite[prop] = action.props[prop];
 						} else {
+							if (storedAction.originProps[prop] === undefined) storedAction.originProps[prop] = action.sprite[prop];
 							action.sprite[prop] = _getMidstate(action.triggerPosition, action.triggerPosition + action.section, storyPosition, storedAction.originProps[prop], action.props[prop]);
 						}
 					}
 				}
+				storedAction.status = positionStatus;
 			}
 		}
 		function triggerActionSetPin(action) {

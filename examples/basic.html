@@ -19,20 +19,20 @@
 		// debug: true,
 		bgcolor: 0x000000,
 		antialias: true,
-		// progressive: true,
+		progressive: true,
 	});
 	
 	// create a graphic
-	var chapter = story.chapter({x:10, y:500,width:750,height:100})
-	var graphic = chapter.graphic({x:10, y:0}).actionByStep({x: 0,y:1040}, 400, 100);
-	// console.log(chapter)
-	var graphic2 = story.graphic({x:10, y:0}).actionByStep({x: 0,y:1040}, 400, 100);
+	var chapter = story.chapter({x:0, y:500,width:750,height:100})
+	var graphic = chapter.graphic({x:100, y:0}).actionByStep({x:0, y:500}, 180, 100).actionByStep({x:200, y:300}, 150, 200);
+	console.log(graphic)
 	graphic.beginFill(0xDE3249);
-	graphic.drawRect(50, 50, 100, 100);
+	graphic.drawRect(0, 0, 100, 100);
 	graphic.endFill();
-
+	
+	var graphic2 = story.graphic({x:10, y:200}).actionByStep({x: 600,y:1040}, 130, 100).actionByStep({x: 100,y:1040}, 100, 300);
 	graphic2.beginFill(0xffffff);
-	graphic2.drawRect(50, 50, 100, 100);
+	graphic2.drawRect(0, 0, 100, 100);
 	graphic2.endFill();
 	</script>
 </body>
