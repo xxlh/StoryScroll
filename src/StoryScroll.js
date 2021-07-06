@@ -400,6 +400,7 @@ class StoryScroll {
 		this.designLength = o.length || 10000;
 		this.containerSelector = o.container;
 		this.backgroundColor = o.bgcolor;
+		this.transparent = o.transparent;
 		this.useLoader = o.loader || false;
 		this.actionDelaysOnLoaded = o.delay || 500;
 		this.loaded = false;
@@ -449,7 +450,7 @@ class StoryScroll {
 	};
 
 	_createContainer(o) {
-		this.app = new PIXI.Application( {backgroundColor : this.backgroundColor, antialias: this.antialias, resolution: 1});
+		this.app = new PIXI.Application( {backgroundColor : this.backgroundColor, transparent  : this.transparent, antialias: this.antialias, resolution: 1});
 		this.loader = this.app.loader;
 		this.load = () => this.app.loader.load.call(this.app.loader);
 		this.loader.onComplete.add(loader => this.loaded = true);
