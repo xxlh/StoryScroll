@@ -49,15 +49,21 @@ class StoryScroll {
 	};
 	spriteVideo(videoUrl, o, _parent) {
 		let sprite = this.sprite(videoUrl, o, _parent);
+		let videoButton = this.graphic({o,...{x: o.x + (o.width-100)/2, y:o.y + (o.height - 100)/2,  alpha:1,}}, _parent);
+
+		sprite.isPlay = false;
 		sprite.play = function(){
 			sprite.texture.baseTexture.resource.source.play()
+			sprite.isPlay = true;
+			if(o.hasVideoButton!== false) videoButton.alpha = 0
 		}
 		sprite.pause= function(){
 			sprite.texture.baseTexture.resource.source.pause()
+			sprite.isPlay = false;
+			if(o.hasVideoButton!== false) videoButton.alpha = 1
 		}
-
+		
 		if(o.hasVideoButton!== false){
-			let videoButton = this.graphic({o,...{x: o.x + (o.width-100)/2, y:o.y + (o.height - 100)/2,  alpha:1,}}, _parent);
 			videoButton.beginFill(0x0, 0.5)
 			.drawRoundedRect(0, 0, 100, 100, 50)
 			.endFill()
@@ -72,18 +78,21 @@ class StoryScroll {
 			sprite.interactive = true;
 			sprite.buttonMode = true;
 			sprite.on('pointertap', toggleVideo);
-
-			sprite.isPlay = false;
+			
 			function toggleVideo() {
 				if(sprite.isPlay){
 					sprite.pause();
-					videoButton.alpha = 1
 				}else{
 					sprite.play();
-					videoButton.alpha = 0
 				}
-				sprite.isPlay = !sprite.isPlay
+				// sprite.isPlay = !sprite.isPlay
 			}
+			sprite.texture.baseTexture.resource.source.addEventListener("ended", function () { 
+				sprite.texture.baseTexture.resource.source.currentTime = 1;
+				if(o.hasVideoButton!== false){
+					sprite.pause();
+				}
+			 }, false);
 		}
 
 		return sprite;
