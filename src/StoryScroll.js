@@ -168,8 +168,9 @@ class StoryScroll {
 	}
 	
 	scrollTo(left, top){
-		let scrollerLeft = this.deviceOrientation == 'portrait' ? 0 : left  ||0;
-		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : top ||0;
+		let scrollerLeft = this.deviceOrientation == 'portrait' ? 0 : left/this._scale  ||0;
+		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : top/this._scale ||0;
+		// console.log(top+"-----"+scrollerTop)
 		this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 	}
 	restLenght(length){
