@@ -102,7 +102,7 @@ class StoryScroll {
 		this._setProps(sprite, o);
 		this._setActions(sprite);
 		this._ship(sprite, _parent);
-		console.log(sprite)
+		// console.log(sprite)
 		if (autoPlay !== false) {
 			sprite.play()
 		}else{
@@ -168,8 +168,8 @@ class StoryScroll {
 	}
 	
 	scrollTo(left, top){
-		let scrollerLeft = this.deviceOrientation == 'portrait' ? 0 : left/this._scale  ||0;
-		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : top/this._scale ||0;
+		let scrollerLeft = this.deviceOrientation == 'portrait' ? 0 : left*this._scale  ||0;
+		let scrollerTop = this.deviceOrientation !== 'portrait' ? 0 : top*this._scale ||0;
 		// console.log(top+"-----"+scrollerTop)
 		this.scroller.scrollTo(scrollerLeft, scrollerTop, false);
 	}
